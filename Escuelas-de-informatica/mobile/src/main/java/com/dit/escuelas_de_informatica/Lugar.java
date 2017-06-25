@@ -1,5 +1,7 @@
 package com.dit.escuelas_de_informatica;
 
+import com.google.android.gms.maps.model.LatLng;
+
 /**
  * Created by bruno on 22/06/17.
  */
@@ -8,18 +10,16 @@ public class Lugar {
 
     private String nombre;
     private String descripcion;
-    private String latitud;
-    private String longitud;
+    private LatLng latlng;
 
     public Lugar() {
 
     }
 
-    public Lugar(String nombre, String descripcion, String latitud, String longitud) {
+    public Lugar(String nombre, String descripcion, LatLng latLng) {
         this.nombre = nombre;
         this.descripcion = descripcion;
-        this.latitud = latitud;
-        this.longitud = longitud;
+        this.latlng = latLng;
     }
 
     public String getNombre() {
@@ -38,26 +38,21 @@ public class Lugar {
         this.descripcion = descripcion;
     }
 
-    public String getLatitud() {
-        return latitud;
+    public double getLatitud() {
+        return latlng.latitude;
     }
 
-    public void setLatitud(String latitud) {
-        this.latitud = latitud;
+    public double getLongitud() {
+        return this.latlng.longitude;
     }
 
-    public String getLongitud() {
-        return longitud;
-    }
-
-    public void setLongitud(String longitud) {
-        this.longitud = longitud;
-    }
 
     @Override
     public String toString() {
-        return "Lugar{" +
-                "nombre='" + nombre + '\'' +
-                '}';
+        return this.nombre;
+    }
+
+    public LatLng getLatLng() {
+        return this.latlng;
     }
 }

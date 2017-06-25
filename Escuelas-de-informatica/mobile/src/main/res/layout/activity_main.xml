@@ -21,8 +21,13 @@
         android:id="@+id/floatingActionButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="end" android:clickable="true" app:backgroundTint="@color/colorPrimary"
-        app:elevation="3dp" app:fabSize="normal" app:srcCompat="@mipmap/ic_action_add"/>
+        android:layout_gravity="end"
+        android:layout_marginBottom="5dp"
+        android:clickable="true"
+        app:backgroundTint="@color/colorPrimary"
+        app:elevation="3dp"
+        app:fabSize="normal"
+        app:srcCompat="@mipmap/ic_action_add" />
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/navigation"
         android:layout_width="match_parent"
