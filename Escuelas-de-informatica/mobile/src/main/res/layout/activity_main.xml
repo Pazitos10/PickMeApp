@@ -9,6 +9,8 @@
     android:orientation="vertical"
     tools:context="com.dit.escuelas_de_informatica.MainActivity">
 
+    <include android:id="@+id/app_bar" layout="@layout/app_bar"></include>
+
     <FrameLayout
         android:id="@+id/frame_content"
         android:layout_width="match_parent"

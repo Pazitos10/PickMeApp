@@ -8,16 +8,39 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    MainFragment mMainFragment;
+    private MainFragment mMainFragment;
     private FloatingActionButton mBotonFlotante;
     private String[] mListaContenido = new String[]{"Lugar 1", "Lugar 2"};
     private int mFragmentActivo;
+    private Toolbar mToolbar;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        mToolbar = (Toolbar) findViewById(R.id.app_bar);
+        setSupportActionBar(mToolbar);
+
+        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        mBotonFlotante = (FloatingActionButton) findViewById(R.id.floatingActionButton);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        mFragmentActivo = R.id.navigation_places;
+        mBotonFlotante.setOnClickListener(this.onBotonCliqueado());
+        inicializar();
+
+    }
+
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -46,20 +69,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     };
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        mBotonFlotante = (FloatingActionButton) findViewById(R.id.floatingActionButton);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-        mFragmentActivo = R.id.navigation_places;
-        mBotonFlotante.setOnClickListener(this.onBotonCliqueado());
-        inicializar();
-
-    }
 
     private View.OnClickListener onBotonCliqueado () {
         return new View.OnClickListener() {

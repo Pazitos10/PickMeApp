@@ -4,7 +4,18 @@
     <string name="title_contacts">Contactos</string>
     <string name="title_messages">Mensajes</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_places">Nuevo lugar</string>
+    <string name="action_next"> Siguiente </string>
+    <string name="action_save"> Guardar </string>
+
+
+    <string name="name_field_label">Nombre (*)</string>
+    <string name="description_field_label">Descripción</string>
+    <string name="required_field">(*) Campo obligatorio</string>
+
+
+    <!-- Messages -->
+    <string name="invalid_place_name">Debe ingresar un nombre para el lugar</string>
+    <string name="invalid_place_latLng">Debe seleccionar un punto en el mapa para continuar</string>
+
 </resources>

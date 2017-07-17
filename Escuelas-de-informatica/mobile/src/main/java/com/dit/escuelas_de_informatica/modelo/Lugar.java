@@ -1,4 +1,4 @@
-package com.dit.escuelas_de_informatica;
+package com.dit.escuelas_de_informatica.modelo;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -10,7 +10,7 @@ public class Lugar {
 
     private String nombre;
     private String descripcion;
-    private LatLng latlng;
+    private LatLng latLng;
 
     public Lugar() {
 
@@ -19,7 +19,7 @@ public class Lugar {
     public Lugar(String nombre, String descripcion, LatLng latLng) {
         this.nombre = nombre;
         this.descripcion = descripcion;
-        this.latlng = latLng;
+        this.latLng = latLng;
     }
 
     public String getNombre() {
@@ -39,11 +39,11 @@ public class Lugar {
     }
 
     public double getLatitud() {
-        return latlng.latitude;
+        return latLng.latitude;
     }
 
     public double getLongitud() {
-        return this.latlng.longitude;
+        return this.latLng.longitude;
     }
 
 
@@ -53,6 +53,10 @@ public class Lugar {
     }
 
     public LatLng getLatLng() {
-        return this.latlng;
+        return this.latLng;
+    }
+
+    public void setLatLng(LatLng latLng) {
+        this.latLng = latLng;
     }
 }
