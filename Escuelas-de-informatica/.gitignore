@@ -24,6 +24,13 @@ gradlew.bat
 mobile/build
 wear/build
 
+# Heavy directories
+caches/
+native/
+gradle/
+wrapper/
+daemon/
+
 # Local configuration file (sdk path, etc)
 local.properties
 
