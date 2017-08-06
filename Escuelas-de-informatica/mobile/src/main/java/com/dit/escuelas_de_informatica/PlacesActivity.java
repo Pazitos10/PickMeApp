@@ -2,37 +2,27 @@ package com.dit.escuelas_de_informatica;
 
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.dit.escuelas_de_informatica.modelo.Lugar;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 
@@ -42,12 +32,14 @@ public class PlacesActivity extends AppCompatActivity
         implements OnMapReadyCallback {
 
     private static final int REQUEST_CODE = 1;
-    private static final int PERMISSION_REQUEST_CODE = 2;
+    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private static final String TAG = "PlacesActivity";
     private GoogleMap mMap;
     private ArrayList<Lugar> mLugares;
     private LatLng mCurrentLatLng;
     private Lugar mLugarElegido;
     private FusedLocationProviderClient mFusedLocationClient;
+    private boolean mLocationPermissionGranted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,12 +125,10 @@ public class PlacesActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-/*        if (hasLocationPermission()) {
-            mMap.setOnMyLocationButtonClickListener(myLocationButtonClickListener());
-        }*/
 
         // Con el mapa listo, seteamos los marcadores de los mLugares que tenemos...
         insertar_marcadores();
+
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
             @Override
@@ -154,6 +144,55 @@ public class PlacesActivity extends AppCompatActivity
                 mMap.addMarker(markerOptions);
             }
         });
+
+
+        // Pedir permiso para acceder a la ubicacion y mostrar el boton de "ir a mi ubicacion"...
+        requestLocationPermission();
+    }
+
+    private void requestLocationPermission() {
+        /*
+         * Request location permission, so that we can get the location of the
+         * device. The result of the permission request is handled by a callback,
+         * onRequestPermissionsResult.
+         */
+        if (ContextCompat.checkSelfPermission(
+                this.getApplicationContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            /*
+             * If location permission is granted, show the location
+             * button on map.
+             */
+            mLocationPermissionGranted = true;
+            mMap.setMyLocationEnabled(true);
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        /*
+        * handler para la respuesta del usuario a permitir acceso a la ubicacion
+        * */
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission granted
+                    // mostrar boton de ubicacion en el mapa:
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+                    mMap.setMyLocationEnabled(true);
+                    mLocationPermissionGranted = true;
+                } else {
+                    // permission denied!
+                    Log.d(TAG, "onRequestPermissionsResult: no se concedio el permiso...");
+                }
+        }
     }
 
     private boolean hasLocationPermission() {

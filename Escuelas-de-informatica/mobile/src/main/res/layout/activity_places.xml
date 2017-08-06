@@ -17,6 +17,11 @@
         android:layout_below="@+id/app_bar"
         android:layout_marginBottom="5dp"
         android:layout_weight=".8"
+        map:cameraBearing="0"
+        map:cameraTargetLat="-43.2514404"
+        map:cameraTargetLng="-65.3099971"
+        map:cameraTilt="30"
+        map:cameraZoom="10"
         tools:context="com.dit.escuelas_de_informatica.PlacesActivity" />
 
 
