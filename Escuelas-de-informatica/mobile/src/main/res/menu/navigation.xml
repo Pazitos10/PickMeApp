@@ -16,4 +16,10 @@
         android:icon="@mipmap/ic_action_message"
         android:title="@string/title_messages"/>
 
+    <item
+        android:id="@+id/navigation_open_wear"
+        android:icon="@drawable/ic_action_open_wear"
+        android:title="@string/title_open_wear"
+        android:onClick="onStartWearableActivityClick"/>
+
 </menu>

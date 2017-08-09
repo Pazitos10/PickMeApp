@@ -17,5 +17,6 @@
     <!-- Messages -->
     <string name="invalid_place_name">Debe ingresar un nombre para el lugar</string>
     <string name="invalid_place_latLng">Debe seleccionar un punto en el mapa para continuar</string>
+    <string name="title_open_wear">Open Wear</string>
 
 </resources>
