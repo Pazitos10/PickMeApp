@@ -67,7 +67,9 @@ public class MainActivity extends AppCompatActivity implements
                 .addOnConnectionFailedListener(this)
                 .build();
 
-
+        if (!mResolvingError) {
+            mGoogleApiClient.connect();
+        }
     }
 
     /**
@@ -80,9 +82,6 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-        if (!mResolvingError) {
-            mGoogleApiClient.connect();
-        }
     }
 
     @Override
@@ -260,6 +259,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onConnected(Bundle connectionHint) {
         LOGD(TAG, "Google API Client was connected");
         mResolvingError = false;
+        Wearable.MessageApi.addListener(mGoogleApiClient, this);
     }
 
     @Override

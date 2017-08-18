@@ -1,4 +1,4 @@
-package com.example.wearapplication;
+package com.dit.escuelas_de_informatica;
 
 import android.app.Activity;
 import android.os.Bundle;
