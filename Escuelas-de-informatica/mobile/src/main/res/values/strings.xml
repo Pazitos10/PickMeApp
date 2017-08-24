@@ -18,4 +18,8 @@
     <string name="invalid_place_name">Debe ingresar un nombre para el lugar</string>
     <string name="invalid_place_latLng">Debe seleccionar un punto en el mapa para continuar</string>
 
+    <!-- Static Undefined Resources -->
+    <string name="undefined_string"> Sin especificar</string>
+    <integer name="undefined_image"> 0 </integer>
+
 </resources>
