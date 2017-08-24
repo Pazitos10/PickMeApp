@@ -34,7 +34,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Random;
 
-import javax.net.ssl.HttpsURLConnection;
+//import javax.net.ssl.HttpsURLConnection;
 
 import io.socket.client.IO;
 import io.socket.emitter.Emitter;
@@ -63,16 +63,16 @@ public class ServerComunication {
     public ServerComunication(Context contexto, String server) throws URISyntaxException, SocketException, JSONException {
         mServer = server;
         mContexto = contexto;
-        mServer = "http://http://166.82.5.159:8080/";
+        mServer = "http://192.168.0.105:5000/";
         mIdDispositivo = getMACUser();
         IO.Options sParams = new IO.Options();
-        sParams.query = "user_id"+mIdDispositivo;
-        mSocket = IO.socket(mServer, sParams);
-//        mSocket = new Socket(mServer);
+        //sParams.query = "user_id="+mIdDispositivo;
+        mSocket = IO.socket(mServer);
 
-        mSocket.on("on connection", new Emitter.Listener(){
+        mSocket.on("conectar", new Emitter.Listener(){
             @Override
             public void call(Object... args) {
+                Log.d("ServerComunication", "call: "+ args.toString());
                 String data = (String)args[0];
                 JSONObject contenido = null;
                 Log.d("ServerComunication", "Conectando");
@@ -93,7 +93,7 @@ public class ServerComunication {
         mSocket.on("no_registrado", new Emitter.Listener(){
             @Override
             public void call(Object... args) {
-                String data = (String)args[0];
+                JSONObject data = (JSONObject) args[0];
                 registrarUsuario();
             }
         });
@@ -122,12 +122,11 @@ public class ServerComunication {
             @Override
             public void call(Object... args) {
                 String data = (String)args[0];
-                JSONObject contenido = null;
                 try {
-                    contenido = new JSONObject(data);
-                    JSONArray mUsuariosJSON = new JSONArray(contenido.get("contenido"));
+                    JSONArray mUsuariosJSON = new JSONArray(data);
                     mListaUsuarios = new JSONArray();
                     for(int i=0; i<mUsuariosJSON.length(); i++){
+                        Log.d("ServerComunication", "usuario -> "+mUsuariosJSON.getJSONObject(i).toString());
                         JSONObject u = mUsuariosJSON.getJSONObject(i);
                         u.put("encabezado", u.getString("nombre"));
                         u.put("cuerpo", u.getString("id_usuario"));
@@ -184,14 +183,14 @@ public class ServerComunication {
     public void registrarUsuario() {
         Log.d("ServerComunication", "Registrando Usuario");
         try {
-            URL url = new URL(mServer);
-            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+            URL url = new URL(mServer+"guardarusuario");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setDoInput(true);
             conn.setDoOutput(true);
 
 //            TODO: The nick must be adquired via GUI
-            String unNick = "Pepito_de_Tal";
+            String unNick = "mabeeeeeeeeeeel";//"Pepito_de_Tal";
             JSONObject data = new JSONObject();
             data.put("nombre", unNick);
             data.put("id_usuario", mIdDispositivo);
@@ -214,7 +213,7 @@ public class ServerComunication {
                     JSONObject rta = new JSONObject(sb.toString());
                     if (rta.getInt("codigo") == 500){
 //                        TODO: Make a Toast with the description stored in 'rta.getString("description")' and relunch Registration process
-                        Log.d("ServerComunication", "Usuario no se pudo conectar");
+                        Log.d("ServerComunication", "Usuario no se pudo conectar: "+rta.getString("descripcion"));
                     }else{
                         mNick = rta.getString("nick");
                         Log.d("ServerComunication", "Exito! Usuario: "+mNick);
@@ -223,7 +222,7 @@ public class ServerComunication {
                     }
             }
 
-
+            mSocket.emit("getusuarios"); //TODO: testing if registered user is effectively registered.
         }catch (MalformedURLException e ){
             e.printStackTrace();
             Toast.makeText(mContexto, "MalformedURLException", Toast.LENGTH_SHORT).show();
@@ -265,6 +264,7 @@ public class ServerComunication {
     public void conectarse() throws JSONException {
         Log.d("ServerComunication", "Intentando Conectar");
         mSocket.connect();
+        mSocket.emit("conectar", mIdDispositivo );
 //        JSONObject usuario = new JSONObject();
 //        usuario.put("user_id", mIdDispositivo);
 //        mSocket.emit("connect", usuario.toString());
