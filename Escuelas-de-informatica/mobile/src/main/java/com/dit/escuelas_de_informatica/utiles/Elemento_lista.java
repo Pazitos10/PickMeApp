@@ -5,6 +5,10 @@ import com.dit.escuelas_de_informatica.R;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by root on 17/07/17.
  */
@@ -38,8 +42,16 @@ public class Elemento_lista {
         return id_imagen;
     }
 
-    @Override
+   @Override
     public String toString() {
-        return this.encabezado+" ("+this.cuerpo+")";
+        return "{'encabezado':'" +this.encabezado+ "', 'cuerpo':'"+this.cuerpo+"', 'idImagen':0}";
+    }
+
+    public Map<String, String> jsonizar(){
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("encabezado", this.encabezado);
+        map.put("cuerpo", this.cuerpo);
+        map.put("idImagen", "0");
+        return map;
     }
 }

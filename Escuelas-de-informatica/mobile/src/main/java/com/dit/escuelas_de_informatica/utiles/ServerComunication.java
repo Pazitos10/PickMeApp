@@ -63,8 +63,9 @@ public class ServerComunication {
     public ServerComunication(Context contexto, String server) throws URISyntaxException, SocketException, JSONException {
         mServer = server;
         mContexto = contexto;
-        mServer = "http://192.168.0.105:5000/";
+        mServer = "http://192.168.43.123:5000/";
         mIdDispositivo = getMACUser();
+        //mIdDispositivo = "b4-b2-b1";
         IO.Options sParams = new IO.Options();
         //sParams.query = "user_id="+mIdDispositivo;
         mSocket = IO.socket(mServer);
@@ -73,19 +74,20 @@ public class ServerComunication {
             @Override
             public void call(Object... args) {
                 Log.d("ServerComunication", "call: "+ args.toString());
-                String data = (String)args[0];
-                JSONObject contenido = null;
+                JSONObject data = (JSONObject)args[0];
+                //JSONObject contenido = null;
                 Log.d("ServerComunication", "Conectando");
 
                 try {
-                    contenido = new JSONObject(data);
-                    mNick = contenido.getString("usuario");
+                    //contenido = new JSONObject(data);
+                    mNick = data.getString("usuario");
                     Log.d("ServerComunication", "Bienvenido "+mNick);
+                    obtenerLugares();
 
                     return;
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    Log.d("ServerComunication", "error al conectar: "+contenido.toString());
+                    Log.d("ServerComunication", "error al conectar: "+data.toString());
                 }
             }
         });
@@ -141,21 +143,24 @@ public class ServerComunication {
             @Override
             public void call(Object... args) {
                 String data = (String)args[0];
-                JSONObject contenido = null;
+                JSONArray contenido = null;
                 try {
-                    contenido = new JSONObject(data);
-                    JSONArray mLugaresJSON = new JSONArray(contenido.get("contenido"));
+                    contenido = new JSONArray(data);
                     mListaLugares = new JSONArray();
-                    for(int i=0; i<mLugaresJSON.length(); i++){
-                        JSONObject l = mLugaresJSON.getJSONObject(i);
+                    for(int i=0; i<contenido.length(); i++){
+                        JSONObject l = (JSONObject) contenido.get(i);
+                        //mListaLugares.put(new Elemento_lista(l.get("nombre").toString(),l.get("descripcion").toString(), 0));
+                        mListaLugares.put(new Elemento_lista(l.get("nombre").toString(),l.get("descripcion").toString(), 0).jsonizar());
+                        /*
                         l.put("encabezado", l.get("nombre"));
                         l.put("cuerpo", l.get("idUsuario"));
                         l.put("idImagen", 0);
                         mListaLugares.put(new Elemento_lista(
                                 l.getString("encabezado"), l.getString("cuerpo"), l.getInt("idImagen"))
                         );
+                        */
                     }
-                } catch (JSONException e) { e.printStackTrace();}
+              } catch (JSONException e) { e.printStackTrace();}
             }
         });
 
@@ -188,7 +193,8 @@ public class ServerComunication {
             conn.setRequestMethod("POST");
             conn.setDoInput(true);
             conn.setDoOutput(true);
-
+            conn.addRequestProperty("Accept", "application/json");
+            conn.addRequestProperty("Content-Type", "application/json");
 //            TODO: The nick must be adquired via GUI
             String unNick = "mabeeeeeeeeeeel";//"Pepito_de_Tal";
             JSONObject data = new JSONObject();

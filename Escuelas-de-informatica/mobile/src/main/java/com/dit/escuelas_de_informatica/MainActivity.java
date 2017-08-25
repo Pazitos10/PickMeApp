@@ -158,7 +158,8 @@ public class MainActivity extends AppCompatActivity {
         String lugares = "[{'encabezado':'Lugar 1', 'cuerpo':'muchos arboles', 'idImagen':0}, {'encabezado':'Lugar 2', 'cuerpo':'pocos arboles', 'idImagen':0}]";
         mListaLugares = new JSONArray(lugares);
         Bundle bundle = new Bundle();
-//        bundle.putString("contenido", mConeccion.getListaLugares().toString());
+        //bundle.putString("contenido", mConeccion.getListaLugares().toString());
+        //bundle.putString("contenido", mConeccion.getListaLugares().toString().replace('"',' '));
         bundle.putString("contenido", lugares);
 //        bundle.putString("contenido", mListaLugares.toString());
         this.mMainFragment = new MainFragment();
