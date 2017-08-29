@@ -13,8 +13,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,10 +31,10 @@ import org.json.JSONObject;
 import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private MainFragment mMainFragment;
     private FloatingActionButton mBotonFlotante;
     private JSONArray mListaLugares;
     private JSONArray mListaMensajes;
@@ -73,41 +75,37 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
+            ListView lista;
+            ArrayAdapter<String> adaptador;
+            lista = (ListView)findViewById(R.id.lista);
             switch (item.getItemId()) {
                 case R.id.navigation_places:
+                    ArrayList<Map<String, String>> listaLugares = mConeccion.getListaLugares();
+                    SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, listaLugares,
+                            android.R.layout.simple_list_item_2,
+                            new String[] {"encabezado", "cuerpo"},
+                            new int[] {android.R.id.text1,
+                                    android.R.id.text2,
+                            });
+                    lista.setAdapter(adapter);
 
-                    String mListaLugares2 = "[{'encabezado':'Un Lugar 1', 'cuerpo':'12345', 'idImagen':'0'}, {'encabezado':'Un Lugar 2', 'cuerpo':'54321', 'idImagen':'0'}]";
-                    try {
-//                        mMainFragment.updateListAdapter(mConeccion.getListaLugares().toString(), getApplicationContext());
-                        mMainFragment.updateListAdapter(mListaLugares2, getApplicationContext());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    mFragmentActivo = R.id.navigation_places;
                     return true;
 
                 case R.id.navigation_contacts:
 
-                    String mListaUsuarios2 = "[{'encabezado':'Contacto 1', 'cuerpo':'12345', 'idImagen':'0'}, {'encabezado':'Contacto 2', 'cuerpo':'54321', 'idImagen':'0'}]";
-                    try {
-//                        mMainFragment.updateListAdapter(mConeccion.getListaUsuarios().toString(), getApplicationContext());
-                        mMainFragment.updateListAdapter(mListaUsuarios2, getApplicationContext());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    mFragmentActivo = R.id.navigation_contacts;
+                    ArrayList<Map<String, String>> listaContactos = mConeccion.getListaUsuarios();
+                    adapter = new SimpleAdapter(MainActivity.this, listaContactos,
+                            android.R.layout.simple_list_item_1,
+                            new String[] {"encabezado", "cuerpo"},
+                            new int[] {android.R.id.text1,
+                                    android.R.id.text2,
+                            });
+                    lista.setAdapter(adapter);
                     return true;
 
                 case R.id.navigation_messages:
                     String mListaMensajes2 = "[{'encabezado':'msj 1', 'cuerpo':'Hola', 'idImagen':'0'}, {'encabezado':'Msj 2', 'cuerpo':'Chau', 'idImagen':'0'}]";
-                    try {
-//                        mMainFragment.updateListAdapter(mConeccion.getListaMensajeses().toString(), getApplicationContext());
-                        mMainFragment.updateListAdapter(mListaMensajes2, getApplicationContext());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                    mFragmentActivo = R.id.navigation_messages;
+                                        mFragmentActivo = R.id.navigation_messages;
                     return true;
             }
             return false;
@@ -155,19 +153,21 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 //        mConeccion.refresh();
-        String lugares = "[{'encabezado':'Lugar 1', 'cuerpo':'muchos arboles', 'idImagen':0}, {'encabezado':'Lugar 2', 'cuerpo':'pocos arboles', 'idImagen':0}]";
-        mListaLugares = new JSONArray(lugares);
-        Bundle bundle = new Bundle();
+        //String lugares = "[{'encabezado':'Lugar 1', 'cuerpo':'muchos arboles', 'idImagen':0}, {'encabezado':'Lugar 2', 'cuerpo':'pocos arboles', 'idImagen':0}]";
+        String lugares = "[ {'idImagen':0, 'encabezado':'Casita', 'cuerpo':'es mi casita'} ]";
+        //mListaLugares = new JSONArray(lugares);
+        //Bundle bundle = new Bundle();
         //bundle.putString("contenido", mConeccion.getListaLugares().toString());
-        //bundle.putString("contenido", mConeccion.getListaLugares().toString().replace('"',' '));
-        bundle.putString("contenido", lugares);
+       // String lis = (String) mConeccion.getListaLugares().toString().replace('"',' ').replace("=",":");
+        //bundle.putString("contenido", lis);
+        //bundle.putString("contenido", lugares);
 //        bundle.putString("contenido", mListaLugares.toString());
-        this.mMainFragment = new MainFragment();
+       /* this.mMainFragment = new MainFragment();
         this.mMainFragment.setArguments(bundle);
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.add(R.id.frame_content, this.mMainFragment, "mainFragment");
-        transaction.commit();
+        transaction.commit();*/
     }
 
 

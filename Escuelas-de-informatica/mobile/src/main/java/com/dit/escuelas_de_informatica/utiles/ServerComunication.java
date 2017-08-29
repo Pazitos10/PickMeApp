@@ -32,6 +32,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Map;
 import java.util.Random;
 
 //import javax.net.ssl.HttpsURLConnection;
@@ -57,15 +59,15 @@ public class ServerComunication {
     private String mNick;
     private String mServer;
     private JSONArray mListaMensajeses;
-    private JSONArray mListaUsuarios;
-    private JSONArray mListaLugares;
+    private ArrayList<Map<String, String>> mListaUsuarios;
+    private ArrayList<Map<String, String>> mListaLugares;
 
     public ServerComunication(Context contexto, String server) throws URISyntaxException, SocketException, JSONException {
         mServer = server;
         mContexto = contexto;
-        mServer = "http://192.168.43.123:5000/";
-        mIdDispositivo = getMACUser();
-        //mIdDispositivo = "b4-b2-b1";
+        mServer = "http://192.168.0.106:5000/";
+        //mIdDispositivo = getMACUser();
+        mIdDispositivo = "b3-b2-b1";
         IO.Options sParams = new IO.Options();
         //sParams.query = "user_id="+mIdDispositivo;
         mSocket = IO.socket(mServer);
@@ -83,6 +85,7 @@ public class ServerComunication {
                     mNick = data.getString("usuario");
                     Log.d("ServerComunication", "Bienvenido "+mNick);
                     obtenerLugares();
+                    obtenerUsuarios();
 
                     return;
                 } catch (JSONException e) {
@@ -124,7 +127,17 @@ public class ServerComunication {
             @Override
             public void call(Object... args) {
                 String data = (String)args[0];
+                JSONArray contenido = null;
                 try {
+                    contenido = new JSONArray(data);
+                    mListaUsuarios = new ArrayList<Map<String, String>>();
+                    for(int i=0; i<contenido.length(); i++){
+                        JSONObject l = (JSONObject) contenido.get(i);
+                        mListaUsuarios.add(i,new Elemento_lista(l.get("nombre").toString(),l.get("id_usuario").toString(), 0).jsonizar());
+                    }
+                } catch (JSONException e) { e.printStackTrace();}
+
+                /*try {
                     JSONArray mUsuariosJSON = new JSONArray(data);
                     mListaUsuarios = new JSONArray();
                     for(int i=0; i<mUsuariosJSON.length(); i++){
@@ -135,7 +148,7 @@ public class ServerComunication {
                         u.put("idImagen", 0);
                         mListaUsuarios.put(u);
                     }
-                } catch (JSONException e) { e.printStackTrace();}
+                } catch (JSONException e) { e.printStackTrace();}*/
             }
         });
 
@@ -146,19 +159,10 @@ public class ServerComunication {
                 JSONArray contenido = null;
                 try {
                     contenido = new JSONArray(data);
-                    mListaLugares = new JSONArray();
+                    mListaLugares = new ArrayList<Map<String, String>>();
                     for(int i=0; i<contenido.length(); i++){
                         JSONObject l = (JSONObject) contenido.get(i);
-                        //mListaLugares.put(new Elemento_lista(l.get("nombre").toString(),l.get("descripcion").toString(), 0));
-                        mListaLugares.put(new Elemento_lista(l.get("nombre").toString(),l.get("descripcion").toString(), 0).jsonizar());
-                        /*
-                        l.put("encabezado", l.get("nombre"));
-                        l.put("cuerpo", l.get("idUsuario"));
-                        l.put("idImagen", 0);
-                        mListaLugares.put(new Elemento_lista(
-                                l.getString("encabezado"), l.getString("cuerpo"), l.getInt("idImagen"))
-                        );
-                        */
+                        mListaLugares.add(i,new Elemento_lista(l.get("nombre").toString(),l.get("descripcion").toString(), 0).jsonizar());
                     }
               } catch (JSONException e) { e.printStackTrace();}
             }
@@ -196,7 +200,7 @@ public class ServerComunication {
             conn.addRequestProperty("Accept", "application/json");
             conn.addRequestProperty("Content-Type", "application/json");
 //            TODO: The nick must be adquired via GUI
-            String unNick = "mabeeeeeeeeeeel";//"Pepito_de_Tal";
+            String unNick = "Elton";//"Pepito_de_Tal";
             JSONObject data = new JSONObject();
             data.put("nombre", unNick);
             data.put("id_usuario", mIdDispositivo);
@@ -231,18 +235,18 @@ public class ServerComunication {
             mSocket.emit("getusuarios"); //TODO: testing if registered user is effectively registered.
         }catch (MalformedURLException e ){
             e.printStackTrace();
-            Toast.makeText(mContexto, "MalformedURLException", Toast.LENGTH_SHORT).show();
+  //          Toast.makeText(mContexto, "MalformedURLException", Toast.LENGTH_SHORT).show();
         } catch (UnsupportedEncodingException e) {
             Toast.makeText(mContexto, "Encoding", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         } catch (ProtocolException e) {
-            Toast.makeText(mContexto, "Protocol", Toast.LENGTH_SHORT).show();
+ //           Toast.makeText(mContexto, "Protocol", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         } catch (IOException e) {
-            Toast.makeText(mContexto, "IO", Toast.LENGTH_SHORT).show();
+ //           Toast.makeText(mContexto, "IO", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         } catch (JSONException e) {
-            Toast.makeText(mContexto, "Json", Toast.LENGTH_SHORT).show();
+ //            Toast.makeText(mContexto, "Json", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
     }
@@ -293,11 +297,11 @@ public class ServerComunication {
         return mListaMensajeses;
     }
 
-    public JSONArray getListaUsuarios(){
+    public ArrayList<Map<String, String>> getListaUsuarios(){
         return mListaUsuarios;
     }
 
-    public JSONArray getListaLugares(){
+    public ArrayList<Map<String, String>> getListaLugares(){
         return mListaLugares;
     }
 }
