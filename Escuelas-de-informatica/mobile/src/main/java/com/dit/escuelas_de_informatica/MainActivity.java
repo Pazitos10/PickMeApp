@@ -1,49 +1,42 @@
 package com.dit.escuelas_de_informatica;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dit.escuelas_de_informatica.utiles.Adaptador_lista;
-import com.dit.escuelas_de_informatica.utiles.Elemento_lista;
 import com.dit.escuelas_de_informatica.utiles.ServerComunication;
+import com.dit.escuelas_de_informatica.utiles.SocketListener;
+import com.dit.escuelas_de_informatica.utiles.Utils;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity implements SocketListener{
+    private String mDeviceId;
     private FloatingActionButton mBotonFlotante;
-    private JSONArray mListaLugares;
-    private JSONArray mListaMensajes;
-    private JSONArray mListaUsuarios;
-    //    private String[] mListaContenido = new String[]{"Lugar 1", "Lugar 2"};
-    ArrayList<Elemento_lista> mListaContenido = new ArrayList<Elemento_lista>();
-    private int mFragmentActivo;
+    private int mSelectedOption;
     private Toolbar mToolbar;
-    private ServerComunication mConeccion;
+    private ServerComunication mServer;
 
 
     @Override
@@ -57,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         mBotonFlotante = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-        mFragmentActivo = R.id.navigation_places;
+        mSelectedOption = R.id.navigation_places;
         mBotonFlotante.setOnClickListener(this.onBotonCliqueado());
         try {
             inicializar();
@@ -80,8 +73,15 @@ public class MainActivity extends AppCompatActivity {
             lista = (ListView)findViewById(R.id.lista);
             switch (item.getItemId()) {
                 case R.id.navigation_places:
-                    ArrayList<Map<String, String>> listaLugares = mConeccion.getListaLugares();
-                    SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, listaLugares,
+                    ArrayList<Map<String, String>> listaLugares = new ArrayList<>();
+
+                    Map<String, String> map = new HashMap<String, String>();
+                    map.put("encabezado", "1");
+                    map.put("cuerpo", "a");
+
+                    listaLugares.add(map);
+
+                    ListAdapter adapter = new ListAdapter(MainActivity.this, listaLugares,
                             android.R.layout.simple_list_item_2,
                             new String[] {"encabezado", "cuerpo"},
                             new int[] {android.R.id.text1,
@@ -93,19 +93,19 @@ public class MainActivity extends AppCompatActivity {
 
                 case R.id.navigation_contacts:
 
-                    ArrayList<Map<String, String>> listaContactos = mConeccion.getListaUsuarios();
-                    adapter = new SimpleAdapter(MainActivity.this, listaContactos,
-                            android.R.layout.simple_list_item_1,
-                            new String[] {"encabezado", "cuerpo"},
-                            new int[] {android.R.id.text1,
-                                    android.R.id.text2,
-                            });
-                    lista.setAdapter(adapter);
+//                    ArrayList<Map<String, String>> listaContactos = mServer.getListaUsuarios();
+//                    adapter = new SimpleAdapter(MainActivity.this, listaContactos,
+//                            android.R.layout.simple_list_item_1,
+//                            new String[] {"encabezado", "cuerpo"},
+//                            new int[] {android.R.id.text1,
+//                                    android.R.id.text2,
+//                            });
+//                    lista.setAdapter(adapter);
                     return true;
 
                 case R.id.navigation_messages:
                     String mListaMensajes2 = "[{'encabezado':'msj 1', 'cuerpo':'Hola', 'idImagen':'0'}, {'encabezado':'Msj 2', 'cuerpo':'Chau', 'idImagen':'0'}]";
-                                        mFragmentActivo = R.id.navigation_messages;
+                    mSelectedOption = R.id.navigation_messages;
                     return true;
             }
             return false;
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(final View v) {
                 String msg = "default";
-                switch (mFragmentActivo){
+                switch (mSelectedOption){
                     case R.id.navigation_places:
                         msg = "Crear nuevo lugar";
                         enviarAlMapa();
@@ -144,7 +144,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void inicializar() throws JSONException {
         try {
-            mConeccion = new ServerComunication(MainActivity.this, "http:pickmeupserver.com");
+            mServer = new ServerComunication("http://192.168.0.7:5000");
+            mDeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+            mServer.emit("conectar", new String[]{ mDeviceId });
+            mServer.on(new String[]{"conectar", "no_registrado"}, this);
+
         } catch (URISyntaxException e) {
             Toast.makeText(MainActivity.this, "URI", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
@@ -152,13 +156,13 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "SOCKET!!!", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
-//        mConeccion.refresh();
+//        mServer.refresh();
         //String lugares = "[{'encabezado':'Lugar 1', 'cuerpo':'muchos arboles', 'idImagen':0}, {'encabezado':'Lugar 2', 'cuerpo':'pocos arboles', 'idImagen':0}]";
         String lugares = "[ {'idImagen':0, 'encabezado':'Casita', 'cuerpo':'es mi casita'} ]";
         //mListaLugares = new JSONArray(lugares);
         //Bundle bundle = new Bundle();
-        //bundle.putString("contenido", mConeccion.getListaLugares().toString());
-       // String lis = (String) mConeccion.getListaLugares().toString().replace('"',' ').replace("=",":");
+        //bundle.putString("contenido", mServer.getListaLugares().toString());
+       // String lis = (String) mServer.getListaLugares().toString().replace('"',' ').replace("=",":");
         //bundle.putString("contenido", lis);
         //bundle.putString("contenido", lugares);
 //        bundle.putString("contenido", mListaLugares.toString());
@@ -171,4 +175,44 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void call(String eventName, Object[] args) {
+        switch (eventName){
+            case "conectar":
+                conectar(args);
+                return;
+            case "no_registrado":
+                registrar_usuario(args);
+                return;
+        }
+    }
+
+    private void registrar_usuario(Object[] args) {
+
+        Log.d("ServerComunication", "Registrando Usuario");
+        Utils.PostTask post = new Utils.PostTask();
+        JSONObject params = new JSONObject();
+        try {
+            params.put("nombre", "la_colorada");
+            params.put("id_usuario", mDeviceId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        post.execute(new String[]{ mServer.getURL() +"/guardarusuario", params.toString() });
+
+        mServer.emit("conectar", new String[]{ mDeviceId });
+    }
+
+
+    public void conectar(Object[] args){
+        JSONObject data = (JSONObject)args[0];
+        Log.d("ServerComunication", "Conectando");
+        try {
+            Log.d("ServerComunication", "Bienvenido "+data.getString("usuario"));
+            return;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.d("ServerComunication", "error al conectar: "+data.toString());
+        }
+    }
 }

@@ -1,4 +1,4 @@
-package com.dit.escuelas_de_informatica;
+package com.dit.escuelas_de_informatica.modelo;
 
 /**
  * Created by bruno on 22/06/17.

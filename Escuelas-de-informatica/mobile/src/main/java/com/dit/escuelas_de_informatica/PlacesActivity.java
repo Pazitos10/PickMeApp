@@ -2,16 +2,9 @@ package com.dit.escuelas_de_informatica;
 
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -22,21 +15,16 @@ import android.view.MenuItem;
 
 import com.dit.escuelas_de_informatica.modelo.Lugar;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 
-import static com.dit.escuelas_de_informatica.utiles.Utiles.mostrarToast;
+import static com.dit.escuelas_de_informatica.utiles.Utils.showToast;
 
 public class PlacesActivity extends AppCompatActivity
         implements OnMapReadyCallback {
@@ -94,10 +82,10 @@ public class PlacesActivity extends AppCompatActivity
             case R.id.action_next:
                 if (mLugarElegido.getLatLng() != null) {
                     Intent i = new Intent(this, NewPlaceDataActivity.class);
-                    i.putExtra("latLng", mLugarElegido.getLatLng());
+                    i.putExtra("nuevoPunto", mLugarElegido.getLatLng());
                     startActivityForResult(i, REQUEST_CODE);
                 } else {
-                    mostrarToast(this, getString(R.string.invalid_place_latLng));
+                    showToast(this, getString(R.string.invalid_place_latLng));
                 }
                 return true;
             default:
