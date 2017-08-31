@@ -1,6 +1,7 @@
 package com.dit.escuelas_de_informatica;
 
 import android.content.Intent;
+
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -15,7 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+
 import android.widget.Toast;
 
 import com.dit.escuelas_de_informatica.utiles.ServerComunication;
@@ -25,12 +26,6 @@ import com.dit.escuelas_de_informatica.utiles.Utils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.SocketException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements SocketListener{
     private String mDeviceId;
@@ -146,19 +141,10 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
     }
 
     private void inicializar() throws JSONException {
-        try {
-            mServer = new ServerComunication("http://192.168.43.123:5000");
-            mDeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
-            mServer.emit("conectar", new String[]{ mDeviceId });
-            mServer.on(new String[]{"conectar", "no_registrado"}, this);
-
-        } catch (URISyntaxException e) {
-            Toast.makeText(MainActivity.this, "URI", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        } catch (SocketException e) {
-            Toast.makeText(MainActivity.this, "SOCKET!!!", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        }
+        mServer = ServerComunication.getInstance("http://192.168.0.7:5000");
+        mDeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+        mServer.emit("conectar", new String[]{ mDeviceId });
+        mServer.on(new String[]{"conectar", "no_registrado"}, this);
     }
 
 

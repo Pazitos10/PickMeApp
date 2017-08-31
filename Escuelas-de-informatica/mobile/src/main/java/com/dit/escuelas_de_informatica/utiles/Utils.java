@@ -2,6 +2,7 @@ package com.dit.escuelas_de_informatica.utiles;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -88,8 +89,5 @@ public class Utils {
         return conn;
 
     }
-
-
-
 
 }

@@ -16,6 +16,8 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.dit.escuelas_de_informatica.utiles.GeofenceTransitionsIntentService;
+import com.dit.escuelas_de_informatica.utiles.ServerComunication;
+import com.dit.escuelas_de_informatica.utiles.SocketListener;
 import com.dit.escuelas_de_informatica.utiles.Utils;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
@@ -30,7 +32,7 @@ public class NewPlaceDataActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks {
 
     private String TAG = "NewPlaceDataActivity";
-    private String API_URL = "http://pickmeapp-pablo1n7.rhcloud.com";
+    private String API_URL = "http://192.168.0.7:5000";
     private Toolbar mToolbar;
     private EditText mEditTextNombre, mEditTextDescripcion;
     private Button mButtonGuardar;
@@ -39,6 +41,7 @@ public class NewPlaceDataActivity extends AppCompatActivity
     private Geofence mGeofence;
     private GeofencingRequest mGeofencingRequest;
     private PendingIntent mGeofencePendingIntent;
+    private ServerComunication mServer;
 
 
     @Override
@@ -84,7 +87,7 @@ public class NewPlaceDataActivity extends AppCompatActivity
                 .addApi(LocationServices.API)
                 .build();
 
-
+        mServer = ServerComunication.getInstance(API_URL);
     }
 
     @Override
@@ -101,6 +104,28 @@ public class NewPlaceDataActivity extends AppCompatActivity
 
 
     private void guardarLugar() {
+
+        if( mEditTextNombre.getText().toString().trim().equals("")){
+            mEditTextNombre.setError(getString(R.string.invalid_place_name));
+        } else {
+            String nombre = mEditTextNombre.getText().toString();
+            String descripcion = mEditTextDescripcion.getText().toString();
+            String[] params = new String[]{
+                    nombre,
+                    Utils.getLatLngString(nuevoPunto),
+                    descripcion,
+                    "pablo1n7"
+            };
+            mServer.emit("guardarlugar", params);
+            createGeofence();
+            setResult(RESULT_OK);
+            finish();
+        }
+
+
+    }
+
+    private void createGeofence() {
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -111,30 +136,6 @@ public class NewPlaceDataActivity extends AppCompatActivity
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
             return;
-        }
-
-        //Juntar la info, armar un json y hacer un post a la API
-        if( mEditTextNombre.getText().toString().trim().equals("")){
-            mEditTextNombre.setError(getString(R.string.invalid_place_name));
-        } else {
-            String nombre = mEditTextNombre.getText().toString();
-            String descripcion = mEditTextDescripcion.getText().toString();
-            Utils.PostTask post = new Utils.PostTask();
-            String params =
-                    "{ nombre: "+ nombre
-                    +", descripcion: "+descripcion
-                    +", latlng: "+ Utils.getLatLngString(nuevoPunto)
-                    +", usuario: pepe }"; //TODO: Reemplazar 'pepe' por el nombre de usuario correcto
-            post.execute(API_URL + "/guardarlugar", params );
-
-            if (Integer.parseInt(Utils.responseCode) / 100 == 2) { // 2xx code means success
-                showToast(this, "¡Lugar guardado con éxito!");
-                Intent returnIntent = new Intent();
-                setResult(RESULT_OK, returnIntent);
-                finish();
-            } else {
-                showToast(this, "Ha ocurrido un error, intente nuevamente");
-            }
         }
 
         //Creamos un Geofence en el punto indicado
@@ -153,7 +154,7 @@ public class NewPlaceDataActivity extends AppCompatActivity
         mGeofencingRequest = new GeofencingRequest.Builder()
                 .addGeofence(mGeofence)
                 .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER
-                                | GeofencingRequest.INITIAL_TRIGGER_DWELL)
+                        | GeofencingRequest.INITIAL_TRIGGER_DWELL)
                 .build();
 
         //Pedimos a LocationServices que maneje los eventos del Geofence
@@ -161,7 +162,6 @@ public class NewPlaceDataActivity extends AppCompatActivity
                 .addGeofences(mGoogleApiClient,
                         mGeofencingRequest,
                         getGeofencePendingIntent());
-
     }
 
     /* Crea un PendingIntent para utilizar cuando ocurra un evento de Geofence */

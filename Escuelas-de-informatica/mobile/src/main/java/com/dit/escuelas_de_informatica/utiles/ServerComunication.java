@@ -39,14 +39,30 @@ import io.socket.engineio.client.Socket;
 public class ServerComunication {
 
 
+    private static ServerComunication instance = null;
     private io.socket.client.Socket mSocket;
     private String mURL;
+
     private HashMap<String, ArrayList<Object>> listeners;
 
-    public ServerComunication(String url) throws URISyntaxException, SocketException, JSONException {
-        mURL = url;
-        mSocket = IO.socket(mURL);
-        mSocket.connect();
+    private ServerComunication(String url) {
+        try {
+            mURL = url;
+            mSocket = IO.socket(mURL);
+            mSocket.connect();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+    protected ServerComunication() {
+        // Exists only to defeat instantiation.
+    }
+
+    public static ServerComunication getInstance(String url) {
+        if(instance == null) {
+            instance = new ServerComunication(url);
+        }
+        return instance;
     }
 
     public void emit(String eventName, String[] args){

@@ -30,7 +30,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
         super("GeofenceTransitionsIS");
     }
 
-    // ...
+    /* Manejador de los eventos del Geofence */
     protected void onHandleIntent(Intent intent) {
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
         if (geofencingEvent.hasError()) {
@@ -39,84 +39,83 @@ public class GeofenceTransitionsIntentService extends IntentService {
             return;
         }
 
-        // Get the transition type.
+        // Obtenemos el tipo de transición
         int geofenceTransition = geofencingEvent.getGeofenceTransition();
 
-        // Test that the reported transition was of interest.
+        // Evaluamos si la transición ocurrida es de interés
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL ||
                 geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
 
-            // Get the geofences that were triggered. A single event can trigger
-            // multiple geofences.
+            // Obtenemos los geofences que se activaron con el evento.
+            // Un unico evento puede estar relacionado a multiples geofences
             List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
 
-            // Get the transition details as a String.
+            // Utilizamos un metodo especial para obtener detalles de la transición
             String geofenceTransitionDetails = getGeofenceTransitionDetails(
                     geofenceTransition,
                     triggeringGeofences
             );
 
-            // Send notification and log the transition details.
+            // Mostramos una notificación con los detalles
             sendNotification(geofenceTransitionDetails);
             Log.i(TAG, geofenceTransitionDetails);
         } else {
-            // Log the error.
             Log.e(TAG, "Transición invalida");
         }
     }
 
 
+    /* Permite crear una notificación con los detalles de una transición */
     private void sendNotification(String notificationDetails) {
-        // Create an explicit content Intent that starts the main Activity.
+        // Creamos un Intent explicito que iniciará un activity en particular
+        // cuando el usuario interactúe con la notificacion
         Intent notificationIntent = new Intent(getApplicationContext(), NewPlaceDataActivity.class);
 
-        // Construct a task stack.
+        // Construimos un task stack para organizar las vistas de la app cuando esto suceda.
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 
-        // Add the main Activity to the task stack as the parent.
+        // Agregamos nuestro activity al task stack como parent.
         stackBuilder.addParentStack(NewPlaceDataActivity.class);
 
-        // Push the content Intent onto the stack.
+        // Agregamos el Intent al stack.
         stackBuilder.addNextIntent(notificationIntent);
 
-        // Get a PendingIntent containing the entire back stack.
+        // Utilizamos un PendingIntent para contener el back stack completo.
         PendingIntent notificationPendingIntent =
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        // Get a notification builder that's compatible with platform versions >= 4
+        // Obtenemos un notification builder compatibles con versiones de Android >= 4
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 
-        // Define the notification settings.
+        // Definimos las propiedades de la notificacion a través del builder.
         builder.setSmallIcon(R.mipmap.ic_launcher)
-                // In a real app, you may want to use a library like Volley
-                // to decode the Bitmap.
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(),
                         R.mipmap.ic_launcher))
-                .setColor(Color.RED)
                 .setContentTitle(notificationDetails)
                 .setContentText("Transicionando")
                 .setContentIntent(notificationPendingIntent)
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
 
-        // Dismiss notification once the user touches it.
+        // Permitimos la eliminación automática de la notificacion una vez que el usuario la toca
         builder.setAutoCancel(true);
 
-        // Get an instance of the Notification manager
+        // Obtenemos una instancia del Notification manager
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // Issue the notification
+        // Le pedimos que maneje nuestra notificación
         mNotificationManager.notify(0, builder.build());
     }
 
-
+    /* Permite obtener detalles de una transición para uno o más geofences
+    * Devolviendo una cadena personalizada con los datos
+    */
     private String getGeofenceTransitionDetails(
             int geofenceTransition,
             List<Geofence> triggeringGeofences) {
 
         String geofenceTransitionString = getTransitionString(geofenceTransition);
 
-        // Get the Ids of each geofence that was triggered.
         ArrayList<String> triggeringGeofencesIdsList = new ArrayList<>();
         for (Geofence geofence : triggeringGeofences) {
             triggeringGeofencesIdsList.add(geofence.getRequestId());
