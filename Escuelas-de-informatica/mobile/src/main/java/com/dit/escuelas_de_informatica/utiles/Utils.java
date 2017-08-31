@@ -41,9 +41,6 @@ public class Utils {
         return String.valueOf(newPoint.latitude)+"/"+String.valueOf(newPoint.longitude);
     }
 
-
-
-
     public static class PostTask extends AsyncTask<String, Void, String> {
 
         public HttpResponseListener delegate=null;

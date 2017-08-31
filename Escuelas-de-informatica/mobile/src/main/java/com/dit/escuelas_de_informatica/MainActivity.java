@@ -1,5 +1,7 @@
 package com.dit.escuelas_de_informatica;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,7 +29,7 @@ import org.json.JSONObject;
 
 
 public class MainActivity extends AppCompatActivity implements SocketListener, HttpResponseListener {
-    private String API_URL = "http://192.168.0.107:5000";
+    private String API_URL = "http://192.168.0.19:5000";
     private String TAG = "MainActivity";
     private String mDeviceId;
     private FloatingActionButton mBotonFlotante;
@@ -36,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     private ServerComunication mServer;
     private Intent wearCommunicationIntent;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener;
+    private String mUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
                 ListView lista;
-                lista = (ListView)findViewById(R.id.lista);
+                lista = (ListView) findViewById(R.id.lista);
                 ArrayAdapter<String> adaptador;
                 switch (item.getItemId()) {
                     case R.id.navigation_places:
@@ -81,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
 
                     listaLugares.add(map);*/
 
-                        ListElements listElements = new ListElements(MainActivity.this,"lugares",R.id.lista,new String[] {"encabezado", "cuerpo"});
+                        ListElements listElements = new ListElements(MainActivity.this, "lugares", R.id.lista, new String[]{"encabezado", "cuerpo"});
                         listElements.fillList();
                     /*
 
@@ -110,13 +113,13 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         };
     }
 
-    private View.OnClickListener onBotonCliqueado () {
+    private View.OnClickListener onBotonCliqueado() {
         return new View.OnClickListener() {
 
             @Override
             public void onClick(final View v) {
                 String msg = "default";
-                switch (mSelectedOption){
+                switch (mSelectedOption) {
                     case R.id.navigation_places:
                         msg = "Crear nuevo lugar";
                         enviarAlMapa();
@@ -139,16 +142,27 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     }
 
     private void initServerCommunication() {
+        mUsername = getUsername();
+        mDeviceId = getDeviceId();
         mServer = ServerComunication.getInstance(API_URL);
-        mDeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
-        mServer.emit("conectar", new String[]{ mDeviceId });
+        mServer.emit("conectar", new String[]{mDeviceId});
         mServer.on(new String[]{"conectar", "no_registrado"}, this);
+    }
+
+    private String getUsername() {
+        AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+        Account list = manager.getAccountsByType("com.google")[0]; //primera cuenta gmail encontrada
+        return list.name.split("@")[0]; //nos quedamos con la primer parte (antes del @)
+    }
+
+    private String getDeviceId() {
+        return Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
 
     @Override
     public void call(String eventName, Object[] args) {
-        switch (eventName){
+        switch (eventName) {
             case "conectar":
                 conectar(args);
                 return;
@@ -163,34 +177,34 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         Log.d(TAG, "Registrando Usuario");
         JSONObject params = new JSONObject();
         try {
-            params.put("nombre", "emu");
+            params.put("nombre", mUsername);
             params.put("id_usuario", mDeviceId);
             Utils.PostTask post = new Utils.PostTask();
             post.delegate = this; //Registro a MainActivity como delegado para escuchar el responseCode
-            post.execute(new String[]{ mServer.getURL() +"/guardarusuario", params.toString() });
+            post.execute(new String[]{mServer.getURL() + "/guardarusuario", params.toString()});
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    public void conectar(Object[] args){
-        JSONObject data = (JSONObject)args[0];
+    public void conectar(Object[] args) {
+        JSONObject data = (JSONObject) args[0];
         Log.d(TAG, "Conectando");
         try {
-            Log.d(TAG, "Bienvenido "+data.getString("usuario"));
+            Log.d(TAG, "Bienvenido " + data.getString("usuario"));
             return;
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d(TAG, "error al conectar: "+data.toString());
+            Log.d(TAG, "error al conectar: " + data.toString());
         }
     }
 
     @Override
     public void onHttpResponse(String responseCode) {
-        switch (responseCode){
+        switch (responseCode) {
             case "200":
                 Log.d(TAG, "onHttpResponse: Success!");
-                mServer.emit("conectar", new String[]{ mDeviceId });
+                mServer.emit("conectar", new String[]{mDeviceId});
                 break;
             case "404":
                 Log.d(TAG, "onHttpResponse: Not Found!");
@@ -199,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                 Log.d(TAG, "onHttpResponse: Server Error!");
                 break;
             default:
-                Log.d(TAG, "onHttpResponse: [Code]: "+responseCode);
+                Log.d(TAG, "onHttpResponse: [Code]: " + responseCode);
                 break;
         }
     }
