@@ -1,7 +1,6 @@
 package com.dit.escuelas_de_informatica;
 
 import android.content.Intent;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -16,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
 import android.widget.Toast;
 
 import com.dit.escuelas_de_informatica.utiles.HttpResponseListener;
@@ -36,41 +34,46 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     private int mSelectedOption;
     private Toolbar mToolbar;
     private ServerComunication mServer;
+    private Intent wearCommunicationIntent;
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        initUI();
+        initServerCommunication();
+        initWearCommunicationService();
+    }
 
+    private void initWearCommunicationService() {
+        wearCommunicationIntent = new Intent(this, WearCommunicationService.class);
+        startService(wearCommunicationIntent);
+    }
+
+    private void initUI() {
+        setContentView(R.layout.activity_main);
         mToolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(mToolbar);
-
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         mBotonFlotante = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         mSelectedOption = R.id.navigation_places;
         mBotonFlotante.setOnClickListener(this.onBotonCliqueado());
-        try {
-            inicializar();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
+        mOnNavigationItemSelectedListener = getOnNavigationItemSelectedListener();
     }
 
+    private BottomNavigationView.OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
+        return new BottomNavigationView.OnNavigationItemSelectedListener() {
 
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-        @RequiresApi(api = Build.VERSION_CODES.M)
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
-            ListView lista;
-            lista = (ListView)findViewById(R.id.lista);
-            ArrayAdapter<String> adaptador;
-            switch (item.getItemId()) {
-                case R.id.navigation_places:
+                ListView lista;
+                lista = (ListView)findViewById(R.id.lista);
+                ArrayAdapter<String> adaptador;
+                switch (item.getItemId()) {
+                    case R.id.navigation_places:
 
                    /* Map<String, String> map = new HashMap<String, String>();
                     map.put("encabezado", "1");
@@ -78,8 +81,8 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
 
                     listaLugares.add(map);*/
 
-                    ListElements listElements = new ListElements(MainActivity.this,"lugares",R.id.lista,new String[] {"encabezado", "cuerpo"});
-                    listElements.fillList();
+                        ListElements listElements = new ListElements(MainActivity.this,"lugares",R.id.lista,new String[] {"encabezado", "cuerpo"});
+                        listElements.fillList();
                     /*
 
                     ArrayList<Map<String, String>> listaLugares = new ArrayList<>();
@@ -90,30 +93,22 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                                     android.R.id.text2,
                             });
                     lista.setAdapter(adapter);*/
-                    return true;
+                        return true;
 
-                case R.id.navigation_contacts:
+                    case R.id.navigation_contacts:
 
-//                    ArrayList<Map<String, String>> listaContactos = mServer.getListaUsuarios();
-//                    adapter = new SimpleAdapter(MainActivity.this, listaContactos,
-//                            android.R.layout.simple_list_item_1,
-//                            new String[] {"encabezado", "cuerpo"},
-//                            new int[] {android.R.id.text1,
-//                                    android.R.id.text2,
-//                            });
-//                    lista.setAdapter(adapter);
-                    return true;
+                        return true;
 
-                case R.id.navigation_messages:
-                    String mListaMensajes2 = "[{'encabezado':'msj 1', 'cuerpo':'Hola', 'idImagen':'0'}, {'encabezado':'Msj 2', 'cuerpo':'Chau', 'idImagen':'0'}]";
-                    mSelectedOption = R.id.navigation_messages;
-                    return true;
+                    case R.id.navigation_messages:
+                        String mListaMensajes2 = "[{'encabezado':'msj 1', 'cuerpo':'Hola', 'idImagen':'0'}, {'encabezado':'Msj 2', 'cuerpo':'Chau', 'idImagen':'0'}]";
+                        mSelectedOption = R.id.navigation_messages;
+                        return true;
+                }
+                return false;
             }
-            return false;
-        }
 
-    };
-
+        };
+    }
 
     private View.OnClickListener onBotonCliqueado () {
         return new View.OnClickListener() {
@@ -143,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         startActivity(intent);
     }
 
-    private void inicializar() throws JSONException {
+    private void initServerCommunication() {
         mServer = ServerComunication.getInstance(API_URL);
         mDeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
         mServer.emit("conectar", new String[]{ mDeviceId });
@@ -165,18 +160,17 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
 
 
     private void registrar_usuario(Object[] args) {
-
         Log.d(TAG, "Registrando Usuario");
-        Utils.PostTask post = new Utils.PostTask();
-        post.delegate = this;
         JSONObject params = new JSONObject();
         try {
             params.put("nombre", "emu");
             params.put("id_usuario", mDeviceId);
+            Utils.PostTask post = new Utils.PostTask();
+            post.delegate = this; //Registro a MainActivity como delegado para escuchar el responseCode
+            post.execute(new String[]{ mServer.getURL() +"/guardarusuario", params.toString() });
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        post.execute(new String[]{ mServer.getURL() +"/guardarusuario", params.toString() });
     }
 
     public void conectar(Object[] args){
@@ -210,8 +204,4 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         }
     }
 
-
-    public ServerComunication getServer() {
-        return mServer;
-    }
 }
