@@ -30,6 +30,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements SocketListener{
     private String mDeviceId;
@@ -37,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
     private int mSelectedOption;
     private Toolbar mToolbar;
     private ServerComunication mServer;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,26 +69,29 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
             ListView lista;
-            ArrayAdapter<String> adaptador;
             lista = (ListView)findViewById(R.id.lista);
+            ArrayAdapter<String> adaptador;
             switch (item.getItemId()) {
                 case R.id.navigation_places:
-                    ArrayList<Map<String, String>> listaLugares = new ArrayList<>();
 
-                    Map<String, String> map = new HashMap<String, String>();
+                   /* Map<String, String> map = new HashMap<String, String>();
                     map.put("encabezado", "1");
                     map.put("cuerpo", "a");
 
-                    listaLugares.add(map);
+                    listaLugares.add(map);*/
 
-                    ListAdapter adapter = new ListAdapter(MainActivity.this, listaLugares,
+                    ListElements listElements = new ListElements(MainActivity.this,"lugares",R.id.lista,new String[] {"encabezado", "cuerpo"});
+                    listElements.fillList();
+                    /*
+
+                    ArrayList<Map<String, String>> listaLugares = new ArrayList<>();
+                    SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, new ArrayList<Map<String, String>>(),
                             android.R.layout.simple_list_item_2,
                             new String[] {"encabezado", "cuerpo"},
                             new int[] {android.R.id.text1,
                                     android.R.id.text2,
                             });
-                    lista.setAdapter(adapter);
-
+                    lista.setAdapter(adapter);*/
                     return true;
 
                 case R.id.navigation_contacts:
@@ -112,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
         }
 
     };
+
 
     private View.OnClickListener onBotonCliqueado () {
         return new View.OnClickListener() {
@@ -141,10 +145,9 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
         startActivity(intent);
     }
 
-
     private void inicializar() throws JSONException {
         try {
-            mServer = new ServerComunication("http://192.168.0.7:5000");
+            mServer = new ServerComunication("http://192.168.43.123:5000");
             mDeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
             mServer.emit("conectar", new String[]{ mDeviceId });
             mServer.on(new String[]{"conectar", "no_registrado"}, this);
@@ -156,22 +159,6 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
             Toast.makeText(MainActivity.this, "SOCKET!!!", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
-//        mServer.refresh();
-        //String lugares = "[{'encabezado':'Lugar 1', 'cuerpo':'muchos arboles', 'idImagen':0}, {'encabezado':'Lugar 2', 'cuerpo':'pocos arboles', 'idImagen':0}]";
-        String lugares = "[ {'idImagen':0, 'encabezado':'Casita', 'cuerpo':'es mi casita'} ]";
-        //mListaLugares = new JSONArray(lugares);
-        //Bundle bundle = new Bundle();
-        //bundle.putString("contenido", mServer.getListaLugares().toString());
-       // String lis = (String) mServer.getListaLugares().toString().replace('"',' ').replace("=",":");
-        //bundle.putString("contenido", lis);
-        //bundle.putString("contenido", lugares);
-//        bundle.putString("contenido", mListaLugares.toString());
-       /* this.mMainFragment = new MainFragment();
-        this.mMainFragment.setArguments(bundle);
-        FragmentManager manager = getFragmentManager();
-        FragmentTransaction transaction = manager.beginTransaction();
-        transaction.add(R.id.frame_content, this.mMainFragment, "mainFragment");
-        transaction.commit();*/
     }
 
 
@@ -187,13 +174,14 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
         }
     }
 
+
     private void registrar_usuario(Object[] args) {
 
         Log.d("ServerComunication", "Registrando Usuario");
         Utils.PostTask post = new Utils.PostTask();
         JSONObject params = new JSONObject();
         try {
-            params.put("nombre", "la_colorada");
+            params.put("nombre", "emu");
             params.put("id_usuario", mDeviceId);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -202,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
 
         mServer.emit("conectar", new String[]{ mDeviceId });
     }
-
 
     public void conectar(Object[] args){
         JSONObject data = (JSONObject)args[0];
@@ -214,5 +201,10 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
             e.printStackTrace();
             Log.d("ServerComunication", "error al conectar: "+data.toString());
         }
+    }
+
+
+    public ServerComunication getServer() {
+        return mServer;
     }
 }
