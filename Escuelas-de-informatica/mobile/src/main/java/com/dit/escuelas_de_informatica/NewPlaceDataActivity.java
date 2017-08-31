@@ -32,7 +32,7 @@ public class NewPlaceDataActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks {
 
     private String TAG = "NewPlaceDataActivity";
-    private String API_URL = "http://192.168.0.7:5000";
+    private String API_URL = "http://192.168.0.107:5000";
     private Toolbar mToolbar;
     private EditText mEditTextNombre, mEditTextDescripcion;
     private Button mButtonGuardar;

@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import com.dit.escuelas_de_informatica.utiles.HttpResponseListener;
 import com.dit.escuelas_de_informatica.utiles.ServerComunication;
 import com.dit.escuelas_de_informatica.utiles.SocketListener;
 import com.dit.escuelas_de_informatica.utiles.Utils;
@@ -33,7 +34,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements SocketListener{
+public class MainActivity extends AppCompatActivity implements SocketListener, HttpResponseListener {
+    private String API_URL = "http://192.168.0.107:5000";
+    private String TAG = "MainActivity";
     private String mDeviceId;
     private FloatingActionButton mBotonFlotante;
     private int mSelectedOption;
@@ -150,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
 //                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
 
 
-        mServer = ServerComunication.getInstance("http://192.168.0.7:5000");
+        mServer = ServerComunication.getInstance(API_URL);
         mDeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
         mServer.emit("conectar", new String[]{ mDeviceId });
         mServer.on(new String[]{"conectar", "no_registrado"}, this);
@@ -171,8 +174,9 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
 
     private void registrar_usuario(Object[] args) {
 
-        Log.d("ServerComunication", "Registrando Usuario");
+        Log.d(TAG, "Registrando Usuario");
         Utils.PostTask post = new Utils.PostTask();
+        post.delegate = this;
         JSONObject params = new JSONObject();
         try {
             params.put("nombre", "la_colorada");
@@ -181,20 +185,37 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
             e.printStackTrace();
         }
         post.execute(new String[]{ mServer.getURL() +"/guardarusuario", params.toString() });
-
-        mServer.emit("conectar", new String[]{ mDeviceId });
     }
 
 
     public void conectar(Object[] args){
         JSONObject data = (JSONObject)args[0];
-        Log.d("ServerComunication", "Conectando");
+        Log.d(TAG, "Conectando");
         try {
-            Log.d("ServerComunication", "Bienvenido "+data.getString("usuario"));
+            Log.d(TAG, "Bienvenido "+data.getString("usuario"));
             return;
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d("ServerComunication", "error al conectar: "+data.toString());
+            Log.d(TAG, "error al conectar: "+data.toString());
+        }
+    }
+
+    @Override
+    public void onHttpResponse(String responseCode) {
+        switch (responseCode){
+            case "200":
+                Log.d(TAG, "onHttpResponse: Success!");
+                mServer.emit("conectar", new String[]{ mDeviceId });
+                break;
+            case "404":
+                Log.d(TAG, "onHttpResponse: Not Found!");
+                break;
+            case "500":
+                Log.d(TAG, "onHttpResponse: Server Error!");
+                break;
+            default:
+                Log.d(TAG, "onHttpResponse: [Code]: "+responseCode);
+                break;
         }
     }
 }
