@@ -1,7 +1,8 @@
 package com.dit.escuelas_de_informatica;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Intent;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -17,6 +18,7 @@ import android.view.View;
 
 import android.widget.Toast;
 
+import com.dit.escuelas_de_informatica.utiles.HttpResponseListener;
 import com.dit.escuelas_de_informatica.utiles.ServerComunication;
 import com.dit.escuelas_de_informatica.utiles.SocketListener;
 import com.dit.escuelas_de_informatica.utiles.Utils;
@@ -25,43 +27,50 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
-public class MainActivity extends AppCompatActivity implements SocketListener{
+public class MainActivity extends AppCompatActivity implements SocketListener, HttpResponseListener {
+    private String API_URL = "http://192.168.0.19:5000";
+    private String TAG = "MainActivity";
     private String mDeviceId;
     private FloatingActionButton mBotonFlotante;
     private int mSelectedOption;
     private Toolbar mToolbar;
     private ServerComunication mServer;
     private PlacesList mPlacesList;
-
+    private Intent wearCommunicationIntent;
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener;
+    private String mUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        initUI();
+        initServerCommunication();
+        initWearCommunicationService();
+    }
 
+    private void initWearCommunicationService() {
+        wearCommunicationIntent = new Intent(this, WearCommunicationService.class);
+        startService(wearCommunicationIntent);
+    }
+
+    private void initUI() {
+        setContentView(R.layout.activity_main);
         mToolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(mToolbar);
-
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         mBotonFlotante = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         mSelectedOption = R.id.navigation_places;
         mBotonFlotante.setOnClickListener(this.onBotonCliqueado());
-        try {
-            inicializar();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
+        mOnNavigationItemSelectedListener = getOnNavigationItemSelectedListener();
     }
 
+    private BottomNavigationView.OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
+        return new BottomNavigationView.OnNavigationItemSelectedListener() {
 
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
-
-        @RequiresApi(api = Build.VERSION_CODES.M)
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
             //ListView lista;
             //lista = (ListView)findViewById(R.id.lista);
@@ -93,16 +102,16 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
             return false;
         }
 
-    };
+        };
+    }
 
-
-    private View.OnClickListener onBotonCliqueado () {
+    private View.OnClickListener onBotonCliqueado() {
         return new View.OnClickListener() {
 
             @Override
             public void onClick(final View v) {
                 String msg = "default";
-                switch (mSelectedOption){
+                switch (mSelectedOption) {
                     case R.id.navigation_places:
                         msg = "Crear nuevo lugar";
                         enviarAlMapa();
@@ -124,19 +133,31 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
         startActivity(intent);
     }
 
-    private void inicializar() throws JSONException {
-        mServer = ServerComunication.getInstance("http://192.168.43.123:5000");
-        mDeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
-        mServer.emit("conectar", new String[]{ mDeviceId });
+    private void initServerCommunication() {
+        mUsername = getUsername();
+        mDeviceId = getDeviceId();
+        mServer = ServerComunication.getInstance(API_URL);
+        mServer.emit("conectar", new String[]{mDeviceId});
         mServer.on(new String[]{"conectar", "no_registrado"}, this);
 
          mPlacesList = new PlacesList(MainActivity.this,"lugares",R.id.lista,new String[] {"name", "description"});
     }
 
+    private String getUsername() {
+        AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+
+        Account list = manager.getAccountsByType("com.google")[0]; //primera cuenta gmail encontrada
+        return list.name.split("@")[0]; //nos quedamos con la primer parte (antes del @)
+    }
+
+    private String getDeviceId() {
+        return Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
 
     @Override
     public void call(String eventName, Object[] args) {
-        switch (eventName){
+        switch (eventName) {
             case "conectar":
                 conectar(args);
                 return;
@@ -148,35 +169,48 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
 
 
     private void registrar_usuario(Object[] args) {
-
-        Log.d("ServerComunication", "Registrando Usuario");
-        Utils.PostTask post = new Utils.PostTask();
+        Log.d(TAG, "Registrando Usuario");
         JSONObject params = new JSONObject();
         try {
-            params.put("nombre", "emu");
+            params.put("nombre", mUsername);
             params.put("id_usuario", mDeviceId);
+            Utils.PostTask post = new Utils.PostTask();
+            post.delegate = this; //Registro a MainActivity como delegado para escuchar el responseCode
+            post.execute(new String[]{mServer.getURL() + "/guardarusuario", params.toString()});
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        post.execute(new String[]{ mServer.getURL() +"/guardarusuario", params.toString() });
-
-        mServer.emit("conectar", new String[]{ mDeviceId });
     }
 
-    public void conectar(Object[] args){
-        JSONObject data = (JSONObject)args[0];
-        Log.d("ServerComunication", "Conectando");
+    public void conectar(Object[] args) {
+        JSONObject data = (JSONObject) args[0];
+        Log.d(TAG, "Conectando");
         try {
-            Log.d("ServerComunication", "Bienvenido "+data.getString("usuario"));
+            Log.d(TAG, "Bienvenido " + data.getString("usuario"));
             return;
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d("ServerComunication", "error al conectar: "+data.toString());
+            Log.d(TAG, "error al conectar: " + data.toString());
         }
     }
 
-
-    public ServerComunication getServer() {
-        return mServer;
+    @Override
+    public void onHttpResponse(String responseCode) {
+        switch (responseCode) {
+            case "200":
+                Log.d(TAG, "onHttpResponse: Success!");
+                mServer.emit("conectar", new String[]{mDeviceId});
+                break;
+            case "404":
+                Log.d(TAG, "onHttpResponse: Not Found!");
+                break;
+            case "500":
+                Log.d(TAG, "onHttpResponse: Server Error!");
+                break;
+            default:
+                Log.d(TAG, "onHttpResponse: [Code]: " + responseCode);
+                break;
+        }
     }
+
 }

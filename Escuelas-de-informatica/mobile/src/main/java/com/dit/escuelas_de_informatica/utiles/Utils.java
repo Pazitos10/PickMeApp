@@ -41,10 +41,10 @@ public class Utils {
         return String.valueOf(newPoint.latitude)+"/"+String.valueOf(newPoint.longitude);
     }
 
-
-
-
     public static class PostTask extends AsyncTask<String, Void, String> {
+
+        public HttpResponseListener delegate=null;
+
         @Override
         protected String doInBackground(String... data) {
             try{
@@ -66,9 +66,14 @@ public class Utils {
         }
 
         @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            Log.d(TAG, "onPostExecute: "+s);
+        protected void onPostExecute(String responseCode) {
+            super.onPostExecute(responseCode);
+            Log.d(TAG, "onPostExecute: "+responseCode);
+            if(delegate!=null) {
+                delegate.onHttpResponse(responseCode);
+            } else {
+                Log.e(TAG, "You have not assigned HttpResponseListener delegate");
+            }
         }
     }
 
