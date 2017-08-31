@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 //import javax.net.ssl.HttpsURLConnection;
 
@@ -65,8 +66,15 @@ public class ServerComunication {
         return instance;
     }
 
+    public static ServerComunication getInstance() {
+        return instance;
+    }
+
     public void emit(String eventName, String[] args){
         mSocket.emit(eventName, args);
+    }
+    public void emit(String eventName){
+        mSocket.emit(eventName);
     }
 
     public void on(final String eventName, final SocketListener listener){

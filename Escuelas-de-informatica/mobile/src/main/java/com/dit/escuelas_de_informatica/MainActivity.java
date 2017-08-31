@@ -14,8 +14,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 
 import android.widget.Toast;
 
@@ -33,6 +31,8 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
     private int mSelectedOption;
     private Toolbar mToolbar;
     private ServerComunication mServer;
+    private PlacesList mPlacesList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,30 +63,14 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-            ListView lista;
-            lista = (ListView)findViewById(R.id.lista);
-            ArrayAdapter<String> adaptador;
+            //ListView lista;
+            //lista = (ListView)findViewById(R.id.lista);
+            //ArrayAdapter<String> adaptador;
             switch (item.getItemId()) {
                 case R.id.navigation_places:
+                    
+                    mPlacesList.mAdapter.notifyDataSetChanged();
 
-                   /* Map<String, String> map = new HashMap<String, String>();
-                    map.put("encabezado", "1");
-                    map.put("cuerpo", "a");
-
-                    listaLugares.add(map);*/
-
-                    ListElements listElements = new ListElements(MainActivity.this,"lugares",R.id.lista,new String[] {"encabezado", "cuerpo"});
-                    listElements.fillList();
-                    /*
-
-                    ArrayList<Map<String, String>> listaLugares = new ArrayList<>();
-                    SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, new ArrayList<Map<String, String>>(),
-                            android.R.layout.simple_list_item_2,
-                            new String[] {"encabezado", "cuerpo"},
-                            new int[] {android.R.id.text1,
-                                    android.R.id.text2,
-                            });
-                    lista.setAdapter(adapter);*/
                     return true;
 
                 case R.id.navigation_contacts:
@@ -102,8 +86,8 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
                     return true;
 
                 case R.id.navigation_messages:
-                    String mListaMensajes2 = "[{'encabezado':'msj 1', 'cuerpo':'Hola', 'idImagen':'0'}, {'encabezado':'Msj 2', 'cuerpo':'Chau', 'idImagen':'0'}]";
-                    mSelectedOption = R.id.navigation_messages;
+                    //String mListaMensajes2 = "[{'encabezado':'msj 1', 'cuerpo':'Hola', 'idImagen':'0'}, {'encabezado':'Msj 2', 'cuerpo':'Chau', 'idImagen':'0'}]";
+                    //mSelectedOption = R.id.navigation_messages;
                     return true;
             }
             return false;
@@ -141,10 +125,12 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
     }
 
     private void inicializar() throws JSONException {
-        mServer = ServerComunication.getInstance("http://192.168.0.7:5000");
+        mServer = ServerComunication.getInstance("http://192.168.43.123:5000");
         mDeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
         mServer.emit("conectar", new String[]{ mDeviceId });
         mServer.on(new String[]{"conectar", "no_registrado"}, this);
+
+         mPlacesList = new PlacesList(MainActivity.this,"lugares",R.id.lista,new String[] {"name", "description"});
     }
 
 
