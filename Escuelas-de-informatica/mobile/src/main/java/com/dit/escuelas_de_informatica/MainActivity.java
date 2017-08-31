@@ -1,6 +1,8 @@
 package com.dit.escuelas_de_informatica;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -143,35 +145,15 @@ public class MainActivity extends AppCompatActivity implements SocketListener{
 
 
     private void inicializar() throws JSONException {
-        try {
-            mServer = new ServerComunication("http://192.168.0.7:5000");
-            mDeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
-            mServer.emit("conectar", new String[]{ mDeviceId });
-            mServer.on(new String[]{"conectar", "no_registrado"}, this);
 
-        } catch (URISyntaxException e) {
-            Toast.makeText(MainActivity.this, "URI", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        } catch (SocketException e) {
-            Toast.makeText(MainActivity.this, "SOCKET!!!", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        }
-//        mServer.refresh();
-        //String lugares = "[{'encabezado':'Lugar 1', 'cuerpo':'muchos arboles', 'idImagen':0}, {'encabezado':'Lugar 2', 'cuerpo':'pocos arboles', 'idImagen':0}]";
-        String lugares = "[ {'idImagen':0, 'encabezado':'Casita', 'cuerpo':'es mi casita'} ]";
-        //mListaLugares = new JSONArray(lugares);
-        //Bundle bundle = new Bundle();
-        //bundle.putString("contenido", mServer.getListaLugares().toString());
-       // String lis = (String) mServer.getListaLugares().toString().replace('"',' ').replace("=",":");
-        //bundle.putString("contenido", lis);
-        //bundle.putString("contenido", lugares);
-//        bundle.putString("contenido", mListaLugares.toString());
-       /* this.mMainFragment = new MainFragment();
-        this.mMainFragment.setArguments(bundle);
-        FragmentManager manager = getFragmentManager();
-        FragmentTransaction transaction = manager.beginTransaction();
-        transaction.add(R.id.frame_content, this.mMainFragment, "mainFragment");
-        transaction.commit();*/
+//        SharedPreferences sharedPref = getSharedPreferences(
+//                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+
+
+        mServer = ServerComunication.getInstance("http://192.168.0.7:5000");
+        mDeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+        mServer.emit("conectar", new String[]{ mDeviceId });
+        mServer.on(new String[]{"conectar", "no_registrado"}, this);
     }
 
 
