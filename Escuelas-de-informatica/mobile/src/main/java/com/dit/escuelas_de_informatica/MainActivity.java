@@ -1,8 +1,7 @@
 package com.dit.escuelas_de_informatica;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -17,7 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+
 import android.widget.Toast;
 
 import com.dit.escuelas_de_informatica.utiles.HttpResponseListener;
@@ -28,11 +27,6 @@ import com.dit.escuelas_de_informatica.utiles.Utils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.SocketException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements SocketListener, HttpResponseListener {
     private String API_URL = "http://192.168.0.107:5000";
@@ -42,7 +36,6 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     private int mSelectedOption;
     private Toolbar mToolbar;
     private ServerComunication mServer;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,26 +67,29 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
             ListView lista;
-            ArrayAdapter<String> adaptador;
             lista = (ListView)findViewById(R.id.lista);
+            ArrayAdapter<String> adaptador;
             switch (item.getItemId()) {
                 case R.id.navigation_places:
-                    ArrayList<Map<String, String>> listaLugares = new ArrayList<>();
 
-                    Map<String, String> map = new HashMap<String, String>();
+                   /* Map<String, String> map = new HashMap<String, String>();
                     map.put("encabezado", "1");
                     map.put("cuerpo", "a");
 
-                    listaLugares.add(map);
+                    listaLugares.add(map);*/
 
-                    ListAdapter adapter = new ListAdapter(MainActivity.this, listaLugares,
+                    ListElements listElements = new ListElements(MainActivity.this,"lugares",R.id.lista,new String[] {"encabezado", "cuerpo"});
+                    listElements.fillList();
+                    /*
+
+                    ArrayList<Map<String, String>> listaLugares = new ArrayList<>();
+                    SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, new ArrayList<Map<String, String>>(),
                             android.R.layout.simple_list_item_2,
                             new String[] {"encabezado", "cuerpo"},
                             new int[] {android.R.id.text1,
                                     android.R.id.text2,
                             });
-                    lista.setAdapter(adapter);
-
+                    lista.setAdapter(adapter);*/
                     return true;
 
                 case R.id.navigation_contacts:
@@ -117,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         }
 
     };
+
 
     private View.OnClickListener onBotonCliqueado () {
         return new View.OnClickListener() {
@@ -146,13 +143,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         startActivity(intent);
     }
 
-
     private void inicializar() throws JSONException {
-
-//        SharedPreferences sharedPref = getSharedPreferences(
-//                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-
-
         mServer = ServerComunication.getInstance(API_URL);
         mDeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
         mServer.emit("conectar", new String[]{ mDeviceId });
@@ -172,6 +163,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         }
     }
 
+
     private void registrar_usuario(Object[] args) {
 
         Log.d(TAG, "Registrando Usuario");
@@ -179,14 +171,13 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         post.delegate = this;
         JSONObject params = new JSONObject();
         try {
-            params.put("nombre", "la_colorada");
+            params.put("nombre", "emu");
             params.put("id_usuario", mDeviceId);
         } catch (JSONException e) {
             e.printStackTrace();
         }
         post.execute(new String[]{ mServer.getURL() +"/guardarusuario", params.toString() });
     }
-
 
     public void conectar(Object[] args){
         JSONObject data = (JSONObject)args[0];
@@ -217,5 +208,10 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                 Log.d(TAG, "onHttpResponse: [Code]: "+responseCode);
                 break;
         }
+    }
+
+
+    public ServerComunication getServer() {
+        return mServer;
     }
 }
