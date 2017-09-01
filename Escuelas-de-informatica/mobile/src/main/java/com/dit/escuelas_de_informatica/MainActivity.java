@@ -33,7 +33,7 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements SocketListener, HttpResponseListener {
     private static final int REQUEST_ACCOUNTS_CODE = 33465;
-    private String API_URL = "http://192.168.2.31:5000";
+    private String API_URL = "http://192.168.1.42:5000";
     private String TAG = "MainActivity";
     private String mDeviceId;
     private FloatingActionButton mBotonFlotante;
@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
 
             switch (item.getItemId()) {
                 case R.id.navigation_places:
+                    mPlacesList.mAdapter.notifyDataSetChanged();
                     mMessagesList.mListView.setVisibility(View.GONE);
                     mPlacesList.mListView.setVisibility(View.VISIBLE);
                     return true;
@@ -93,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                     return true;
 
                 case R.id.navigation_messages:
+                    mMessagesList.mAdapter.notifyDataSetChanged();
                     mPlacesList.mListView.setVisibility(View.GONE);
                     mMessagesList.mListView.setVisibility(View.VISIBLE);
                     return true;

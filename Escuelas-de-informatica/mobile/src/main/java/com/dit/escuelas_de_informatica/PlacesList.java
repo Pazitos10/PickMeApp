@@ -78,4 +78,10 @@ public class PlacesList extends ElementsList {
 
     }
 
+    @Override
+    public void onClick(int i) {
+        
+    }
+
+
 }

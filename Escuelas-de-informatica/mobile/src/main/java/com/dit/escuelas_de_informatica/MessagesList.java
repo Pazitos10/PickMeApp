@@ -1,5 +1,10 @@
 package com.dit.escuelas_de_informatica;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.view.View;
+import android.widget.AdapterView;
+
 import com.dit.escuelas_de_informatica.modelo.Message;
 import com.dit.escuelas_de_informatica.modelo.Place;
 import com.google.android.gms.maps.model.LatLng;
@@ -23,6 +28,7 @@ public class MessagesList extends ElementsList {
     public MessagesList(MainActivity context, String eventName, int idView, String[] elementsField) {
         super(context, eventName, idView, elementsField);
         this.mMessages = new ArrayList<Message>();
+
     }
 
      @Override
@@ -72,6 +78,11 @@ public class MessagesList extends ElementsList {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+    }
+
+    @Override
+    public void onClick(int i) {
 
     }
 

@@ -1,6 +1,8 @@
 package com.dit.escuelas_de_informatica;
 
 import android.app.Activity;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
@@ -46,6 +48,13 @@ public abstract class ElementsList implements SocketListener{
                 });
         mListView.setAdapter(mAdapter);
 
+        this.mListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                onClick(i);
+            }
+        });
+
 
     }
 
@@ -54,5 +63,6 @@ public abstract class ElementsList implements SocketListener{
 
     abstract public void fillList(Object[] args);
     abstract public void refreshItem(JSONObject obj);
+    abstract public void onClick(int i);
 
 }
