@@ -1,10 +1,13 @@
 package com.dit.escuelas_de_informatica;
 
+import android.app.Activity;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import com.dit.escuelas_de_informatica.utiles.ServerComunication;
 import com.dit.escuelas_de_informatica.utiles.SocketListener;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -21,15 +24,18 @@ public abstract class ElementsList implements SocketListener{
     public ArrayList<Map<String, String>> mList;
     public SimpleAdapter mAdapter;
     public String[] mElementsField;
-
+    public Activity mContext;
 
     public ElementsList(final MainActivity context, String eventName, final int idView, String[] elementsField) {
         this.mList = new ArrayList<>();
         this.mEventName = eventName;
         this.mElementsField = elementsField;
+        this.mContext = context;
         //TODO: aca necesito el server de una manera comoda.
         ServerComunication serverComunication = ServerComunication.getInstance();
-        serverComunication.on(("get" + this.mEventName),this);
+        //serverComunication.on(("get" + this.mEventName),this);
+        String[] events = new String[]{("get" + this.mEventName),("act-" + this.mEventName)};
+        serverComunication.on(events,this);
         serverComunication.emit(("get" + this.mEventName));
         mListView = (ListView)context.findViewById(idView);
         mAdapter = new SimpleAdapter(context, mList,
@@ -47,22 +53,6 @@ public abstract class ElementsList implements SocketListener{
     public void call(String eventName, Object[] args) {}
 
     abstract public void fillList(Object[] args);
-    abstract public void refreshItem(Object[] args);
+    abstract public void refreshItem(JSONObject obj);
 
-
-    /*@Override
-    public void call(String eventName, Object[] args) {
-        if (("get" + this.mEventName).equals("getlugares")){ //TODO: capaz que habria que cambiar esto. No me deja usar un SWITCH CASE
-            this.fillList(args);
-        }
-    }
-
-    public void fillList(Object[] args){
-    //public void fillList(){
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("encabezado", "1");
-        map.put("cuerpo", "a");
-        this.mList.add(map);
-        mAdapter.notifyDataSetChanged();
-    }*/
 }

@@ -33,7 +33,7 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements SocketListener, HttpResponseListener {
     private static final int REQUEST_ACCOUNTS_CODE = 33465;
-    private String API_URL = "http://166.82.15.78:5000";
+    private String API_URL = "http://192.168.2.31:5000";
     private String TAG = "MainActivity";
     private String mDeviceId;
     private FloatingActionButton mBotonFlotante;
@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     private Toolbar mToolbar;
     private ServerComunication mServer;
     private PlacesList mPlacesList;
+    private MessagesList mMessagesList;
     private Intent wearCommunicationIntent;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener;
     private String mUsername;
@@ -82,31 +83,18 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-            //ListView lista;
-            //lista = (ListView)findViewById(R.id.lista);
-            //ArrayAdapter<String> adaptador;
             switch (item.getItemId()) {
                 case R.id.navigation_places:
-                    
-                    mPlacesList.mAdapter.notifyDataSetChanged();
-
+                    mMessagesList.mListView.setVisibility(View.GONE);
+                    mPlacesList.mListView.setVisibility(View.VISIBLE);
                     return true;
 
                 case R.id.navigation_contacts:
-
-//                    ArrayList<Map<String, String>> listaContactos = mServer.getListaUsuarios();
-//                    adapter = new SimpleAdapter(MainActivity.this, listaContactos,
-//                            android.R.layout.simple_list_item_1,
-//                            new String[] {"encabezado", "cuerpo"},
-//                            new int[] {android.R.id.text1,
-//                                    android.R.id.text2,
-//                            });
-//                    lista.setAdapter(adapter);
                     return true;
 
                 case R.id.navigation_messages:
-                    //String mListaMensajes2 = "[{'encabezado':'msj 1', 'cuerpo':'Hola', 'idImagen':'0'}, {'encabezado':'Msj 2', 'cuerpo':'Chau', 'idImagen':'0'}]";
-                    //mSelectedOption = R.id.navigation_messages;
+                    mPlacesList.mListView.setVisibility(View.GONE);
+                    mMessagesList.mListView.setVisibility(View.VISIBLE);
                     return true;
             }
             return false;
@@ -148,8 +136,8 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         mServer = ServerComunication.getInstance(API_URL);
         mServer.emit("conectar", new String[]{mDeviceId});
         mServer.on(new String[]{"conectar", "no_registrado"}, this);
-
-        mPlacesList = new PlacesList(MainActivity.this, "lugares", R.id.lista,new String[] {"name", "description"});
+        mPlacesList = new PlacesList(MainActivity.this, "lugares", R.id.placesList,new String[] {"name", "description"});
+        mMessagesList = new MessagesList(MainActivity.this,"mensajes",R.id.messageList,new String[] {"timeUser", "message"});
     }
 
 
@@ -158,16 +146,10 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     permission)) {
 
-                // Show an expanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
 
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
             }
-
-
 
 
         }
@@ -182,22 +164,15 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
                     AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
                     Account list = manager.getAccountsByType("com.google")[0]; //primera cuenta gmail encontrada
                     mUsername =  list.name.split("@")[0]; //nos quedamos con la primer parte (antes del @)
                     registrar_usuario();
                 } else {
 
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
                 }
                 return;
             }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
     }
 

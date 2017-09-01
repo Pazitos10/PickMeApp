@@ -1,7 +1,6 @@
 package com.dit.escuelas_de_informatica;
 
-import android.view.View;
-
+import com.dit.escuelas_de_informatica.modelo.Message;
 import com.dit.escuelas_de_informatica.modelo.Place;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -17,19 +16,18 @@ import java.util.Map;
  * Created by developer on 8/31/17.
  */
 
-public class PlacesList extends ElementsList {
+public class MessagesList extends ElementsList {
 
-    ArrayList<Place> mPlaces;
+    ArrayList<Message> mMessages;
 
-    public PlacesList(MainActivity context, String eventName, int idView, String[] elementsField) {
+    public MessagesList(MainActivity context, String eventName, int idView, String[] elementsField) {
         super(context, eventName, idView, elementsField);
-        this.mPlaces = new ArrayList<Place>();
-        this.mListView.setVisibility(View.VISIBLE);
+        this.mMessages = new ArrayList<Message>();
     }
 
      @Override
     public void call(String eventName, Object[] args) {
-        if (("get" + this.mEventName).equals("getlugares")){ //TODO: capaz que habria que cambiar esto. No me deja usar un SWITCH CASE
+        if (("get" + this.mEventName).equals("getmensajes")){ //TODO: capaz que habria que cambiar esto. No me deja usar un SWITCH CASE
             this.fillList(args);
         }else{
             try {
@@ -57,21 +55,20 @@ public class PlacesList extends ElementsList {
 
     @Override
     public void refreshItem(JSONObject l) {
-        Place place = null;
+        Message message = null;
         try {
-            place = new Place(l.get("nombre").toString(),l.get("descripcion").toString(),new LatLng(0.1,0.5));
-            mPlaces.add(place);
-            Map<String, String> itemPlace = new HashMap<String, String>();
-            itemPlace.put("name",place.getName());
-            itemPlace.put("description", place.getDescription());
-            mList.add(itemPlace);
+            message = new Message(l.get("origen").toString(),l.get("destino").toString(),l.get("mensaje").toString(),l.get("tiempo").toString());
+            mMessages.add(message);
+            Map<String, String> itemMessage = new HashMap<String, String>();
+            itemMessage.put("timeUser",message.getmTime()+"  "+message.getSource());
+            itemMessage.put("message", message.getMessageText());
+            mList.add(itemMessage);
             mContext.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     mAdapter.notifyDataSetChanged();
                 }
             });
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
