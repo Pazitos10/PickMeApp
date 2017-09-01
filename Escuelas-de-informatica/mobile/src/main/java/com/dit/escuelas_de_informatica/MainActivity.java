@@ -2,6 +2,7 @@ package com.dit.escuelas_de_informatica;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     private Intent wearCommunicationIntent;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener;
     private String mUsername;
+    private ProgressDialog mLoadingDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,14 +166,34 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     public void call(String eventName, Object[] args) {
         switch (eventName) {
             case "conectar":
+                dismissLoadingDialog();
                 conectar(args);
                 return;
             case "no_registrado":
                 registrar_usuario(args);
+                showLoadingDialog("Registrando usuario");
+                Log.d(TAG, "call: mostrando loading dialog");
                 return;
         }
     }
 
+    public void showLoadingDialog(final String msg) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mLoadingDialog = new ProgressDialog(MainActivity.this);
+                mLoadingDialog.setMessage(msg);
+                mLoadingDialog.setIndeterminate(true);
+                mLoadingDialog.show();
+            }
+        });
+    }
+
+    public void dismissLoadingDialog() {
+        if (mLoadingDialog != null) {
+            mLoadingDialog.dismiss();
+        }
+    }
 
     private void registrar_usuario(Object[] args) {
         Log.d(TAG, "Registrando Usuario");
