@@ -70,10 +70,10 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         setSupportActionBar(mToolbar);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         mBotonFlotante = (FloatingActionButton) findViewById(R.id.floatingActionButton);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         mSelectedOption = R.id.navigation_places;
         mBotonFlotante.setOnClickListener(this.onBotonCliqueado());
         mOnNavigationItemSelectedListener = getOnNavigationItemSelectedListener();
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
