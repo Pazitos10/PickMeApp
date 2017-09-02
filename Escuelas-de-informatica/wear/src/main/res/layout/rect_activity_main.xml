@@ -1,9 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:orientation="vertical"
-    tools:context="com.dit.escuelas_de_informatica.MainActivity" tools:deviceIds="wear_square">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#607d8b"
+    android:orientation="vertical"
+    tools:context="com.dit.escuelas_de_informatica.MainActivity"
+    tools:deviceIds="wear_square">
 
-    <TextView android:id="@+id/text" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:text="@string/hello_pickme_app" />
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/hello_pickme_app"
+        android:textColor="@color/white" />
+
+    <ImageButton
+        android:id="@+id/imageButton"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:layout_margin="26dp"
+        android:background="@drawable/roundcorners"
+        android:elevation="1dp"
+        android:onClick="save_current_place_location"
+        android:src="@mipmap/ic_launcher"
+        android:visibility="visible" />
+
 </LinearLayout>
