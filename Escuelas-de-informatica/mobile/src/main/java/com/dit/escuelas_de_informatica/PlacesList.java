@@ -59,7 +59,10 @@ public class PlacesList extends ElementsList {
     public void refreshItem(JSONObject l) {
         Place place = null;
         try {
-            place = new Place(l.get("nombre").toString(),l.get("descripcion").toString(),new LatLng(0.1,0.5));
+
+            double lat = new Double(l.get("latlng").toString().split("/")[0]);
+            double lnt = new Double(l.get("latlng").toString().split("/")[1]);
+            place = new Place(l.get("nombre").toString(),l.get("descripcion").toString(), new LatLng(lat,lnt));
             mPlaces.add(place);
             Map<String, String> itemPlace = new HashMap<String, String>();
             itemPlace.put("name",place.getName());
@@ -80,7 +83,7 @@ public class PlacesList extends ElementsList {
 
     @Override
     public void onClick(int i) {
-        
+
     }
 
 
