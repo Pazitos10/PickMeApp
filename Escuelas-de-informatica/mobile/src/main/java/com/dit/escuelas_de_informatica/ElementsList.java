@@ -7,6 +7,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import com.dit.escuelas_de_informatica.utiles.ServerComunication;
+import com.dit.escuelas_de_informatica.utiles.ServerComunicationException;
 import com.dit.escuelas_de_informatica.utiles.SocketListener;
 
 import org.json.JSONObject;
@@ -38,7 +39,11 @@ public abstract class ElementsList implements SocketListener{
         //serverComunication.on(("get" + this.mEventName),this);
         String[] events = new String[]{("get" + this.mEventName),("act-" + this.mEventName)};
         serverComunication.on(events,this);
-        serverComunication.emit(("get" + this.mEventName));
+        try {
+            serverComunication.emit(("get" + this.mEventName));
+        } catch (ServerComunicationException e) {
+            e.printStackTrace();
+        }
         mListView = (ListView)context.findViewById(idView);
         mAdapter = new SimpleAdapter(context, mList,
                 android.R.layout.simple_list_item_2,
@@ -55,7 +60,7 @@ public abstract class ElementsList implements SocketListener{
             }
         });
 
-        this.mListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 onClick(i);
