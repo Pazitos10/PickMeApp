@@ -3,6 +3,7 @@ package com.dit.escuelas_de_informatica;
 import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -33,7 +34,7 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements SocketListener, HttpResponseListener {
     private static final int REQUEST_ACCOUNTS_CODE = 33465;
-    private String API_URL = "http://192.168.0.107:5000";
+    private String API_URL = "http://192.168.43.123:5000";
     private String TAG = "MainActivity";
     private String mDeviceId;
     private FloatingActionButton mBotonFlotante;
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                     mPlacesList.mAdapter.notifyDataSetChanged();
                     mMessagesList.mListView.setVisibility(View.GONE);
                     mPlacesList.mListView.setVisibility(View.VISIBLE);
+                    mSelectedOption = R.id.navigation_places;
                     return true;
 
                 case R.id.navigation_contacts:
@@ -97,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                     mMessagesList.mAdapter.notifyDataSetChanged();
                     mPlacesList.mListView.setVisibility(View.GONE);
                     mMessagesList.mListView.setVisibility(View.VISIBLE);
+                    mSelectedOption = R.id.navigation_messages;
                     return true;
             }
             return false;
@@ -121,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                         break;
                     case R.id.navigation_messages:
                         msg = "Crear nuevo mensaje";
+                        Intent intent = new Intent(MainActivity.this, MessagesActivity.class);
+                        startActivity(intent);
                         break;
                 }
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
@@ -138,8 +143,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         mServer = ServerComunication.getInstance(API_URL);
         mServer.emit("conectar", new String[]{mDeviceId});
         mServer.on(new String[]{"conectar", "no_registrado"}, this);
-        mPlacesList = new PlacesList(MainActivity.this, "lugares", R.id.placesList,new String[] {"name", "description"});
-        mMessagesList = new MessagesList(MainActivity.this,"mensajes",R.id.messageList,new String[] {"timeUser", "message"});
+
     }
 
 
@@ -154,7 +158,10 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
             }
 
 
+        }else{
+            registrar_usuario();
         }
+
 
     }
 
@@ -165,10 +172,6 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
             case REQUEST_ACCOUNTS_CODE: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
-                    Account list = manager.getAccountsByType("com.google")[0]; //primera cuenta gmail encontrada
-                    mUsername =  list.name.split("@")[0]; //nos quedamos con la primer parte (antes del @)
                     registrar_usuario();
                 } else {
 
@@ -199,6 +202,13 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
 
 
     private void registrar_usuario() {
+        try{
+            AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+            Account list = manager.getAccountsByType("com.google")[0]; //primera cuenta gmail encontrada
+            mUsername =  list.name.split("@")[0]; //nos quedamos con la primer parte (antes del @)
+        } catch (IndexOutOfBoundsException e){
+            mUsername = "pepe";
+        }
         Log.d(TAG, "Registrando Usuario");
         JSONObject params = new JSONObject();
         try {
@@ -218,6 +228,8 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         try {
             Log.d(TAG, "Bienvenido " + data.getString("usuario"));
             mUsername = data.getString("usuario");
+            mPlacesList = new PlacesList(MainActivity.this, "lugares", R.id.placesList,new String[] {"name", "description"});
+            mMessagesList = new MessagesList(MainActivity.this,"mensajes",R.id.messageList,new String[] {"timeUser", "message"});
             return;
         } catch (JSONException e) {
             e.printStackTrace();

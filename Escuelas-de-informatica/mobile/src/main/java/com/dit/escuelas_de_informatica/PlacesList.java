@@ -24,12 +24,18 @@ public class PlacesList extends ElementsList {
     public PlacesList(MainActivity context, String eventName, int idView, String[] elementsField) {
         super(context, eventName, idView, elementsField);
         this.mPlaces = new ArrayList<Place>();
-        this.mListView.setVisibility(View.VISIBLE);
+        mContext.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mListView.setVisibility(View.VISIBLE);
+            }
+        });
+
     }
 
      @Override
     public void call(String eventName, Object[] args) {
-        if (("get" + this.mEventName).equals("getlugares")){ //TODO: capaz que habria que cambiar esto. No me deja usar un SWITCH CASE
+        if (("get" + this.mEventName).equals(eventName)){ //TODO: capaz que habria que cambiar esto. No me deja usar un SWITCH CASE
             this.fillList(args);
         }else{
             try {
