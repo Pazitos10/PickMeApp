@@ -1,15 +1,10 @@
 package com.dit.escuelas_de_informatica;
 
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -18,13 +13,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.dit.escuelas_de_informatica.modelo.Message;
-
 import com.dit.escuelas_de_informatica.modelo.User;
 import com.dit.escuelas_de_informatica.utiles.ServerComunication;
-import com.dit.escuelas_de_informatica.utiles.SocketListener;
 import com.dit.escuelas_de_informatica.utiles.ServerComunicationException;
+import com.dit.escuelas_de_informatica.utiles.SocketListener;
 import com.dit.escuelas_de_informatica.utiles.Utils;
-
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,9 +25,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-/**
- * Created by developer on 9/4/17.
- */
 
 public class MessagesActivity  extends AppCompatActivity implements SocketListener {
 
@@ -46,6 +36,8 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
     private ArrayAdapter<String> mAdapter;
     private Toolbar mToolbar;
     private String mIdLugar;
+    private View.OnClickListener mSnackbarActionClickListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,10 +59,7 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
             }
         });
 
-
-        //mEditDestination = (EditText) findViewById(R.id.editTextDestination);
         mEditMessage = (EditText) findViewById(R.id.editTextMessage);
-
         mUsers = new ArrayList<User>();
         mList = new ArrayList<String>();
 
@@ -79,6 +68,14 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
         mEditDestination= (AutoCompleteTextView)
                 findViewById(R.id.editTextDestination);
         mEditDestination.setAdapter(mAdapter);
+        mSnackbarActionClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setResult(RESULT_CANCELED, new Intent().putExtra("HasConnectionError", true));
+                finish();
+            }
+        };
+
 
         ServerComunication serverComunication = ServerComunication.getInstance();
         String[] events = new String[]{("getusuarios"),("act-usuarios")};
@@ -97,45 +94,32 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
     public void sendMessage(View view)
     {
         Log.d("SendMessage", "Registrando Usuario");
-        //mEditDestination.getText()
         String message = mEditMessage.getText().toString().trim();
         String destination = mEditDestination.getText().toString().trim();
         if(!message.equals("") && !destination.equals("") && mList.contains(destination.toString()) ){
             Message newMessage = new Message(destination,message,mIdLugar);
             try {
                 newMessage.send();
-                Toast.makeText(this, "Mensaje Enviado", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.message_sent), Toast.LENGTH_SHORT).show();
                 setResult(RESULT_OK);
                 this.finish();
             } catch (ServerComunicationException e) {
-                showSnackbarServerDisconnected(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        setResult(RESULT_CANCELED, new Intent().putExtra("HasConnectionError", true));
-                        finish();
-                    }
-                });
+                Utils.showSnackbarServerDisconnected(this, mSnackbarActionClickListener);
             }
         }else{
             if (message.equals("")){
-                mEditMessage.setError("Error - Campo vacio");
+                mEditMessage.setError(getString(R.string.invalid_message_body));
             }
             else if (destination.equals("") || !mList.contains(destination.toString())){
-                mEditDestination.setError("Error - Campo vacio, o usuario no existe");
+                mEditDestination.setError(getString(R.string.invalid_message_receiver));
             }else{
-                mEditMessage.setError("Error - Campo vacio");
-                mEditDestination.setError("Error - Campo vacio, o usuario no existe");
+                mEditMessage.setError(getString(R.string.invalid_message_body));
+                mEditDestination.setError(getString(R.string.invalid_message_receiver));
             }
-           // TODO : usar @String!
         }
 
 
     }
-
-    private void showSnackbarServerDisconnected(View.OnClickListener onClickListener) {
-        Utils.showSnackbar(this, "Error al conectar", "Reintentar", onClickListener);
-    }
-
 
     @Override
     public void call(String eventName, Object[] args) {
@@ -164,11 +148,11 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
     }
 
     public void refreshItem(JSONObject l) {
-        User user = null;
+        User user;
         try {
-            user = new User(l.get("id_usuario").toString(),l.get("nombre").toString());
+            user = new User(l.get("id_usuario").toString(), l.get("nombre").toString());
             mUsers.add(user);
-            String itemPlace = new String(l.get("nombre").toString());
+            String itemPlace = l.get("nombre").toString();
             mList.add(itemPlace);
             this.runOnUiThread(new Runnable() {
                 @Override
@@ -181,5 +165,17 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        this.finish();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }

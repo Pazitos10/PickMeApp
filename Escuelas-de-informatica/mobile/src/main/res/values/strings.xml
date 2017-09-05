@@ -22,6 +22,16 @@
     <!-- Messages -->
     <string name="invalid_place_name">Debe ingresar un nombre para el lugar</string>
     <string name="invalid_place_latLng">Debe seleccionar un punto en el mapa para continuar</string>
+    <string name="invalid_message_body">Error - Campo vacio</string>
+    <string name="invalid_message_receiver"> Error - Campo vacio, o usuario no existe </string>
+    <string name="no_connection_message">Error al conectar</string>
+    <string name="no_connection_action">Reintentar</string>
+    <string name="connecting_user_message">Conectando</string>
+    <string name="registering_user_message">Registrando</string>
+    <string name="message_sent">Mensaje Enviado</string>
+
+
+
 
     <!-- Static Undefined Resources -->
     <string name="undefined_string"> Sin especificar</string>

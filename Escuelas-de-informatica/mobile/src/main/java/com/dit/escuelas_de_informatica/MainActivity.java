@@ -6,7 +6,6 @@ import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -14,7 +13,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -22,8 +20,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-
-import android.widget.Toast;
 
 import com.dit.escuelas_de_informatica.utiles.HttpResponseListener;
 import com.dit.escuelas_de_informatica.utiles.ServerComunication;
@@ -36,7 +32,7 @@ import org.json.JSONObject;
 
 
 public class MainActivity extends AppCompatActivity implements SocketListener, HttpResponseListener {
-    private static final int REQUEST_ACCOUNTS_CODE = 33465;
+    private static final int ACCOUNTS_REQUEST_CODE = 33465;
     private String API_URL = "http://192.168.0.107:5000";
     private static final int MESSAGES_REQUEST_CODE = 1;
     private String TAG = "MainActivity";
@@ -52,18 +48,14 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     private String mUsername;
     private ProgressDialog mLoadingDialog;
     private BottomNavigationView mNavigation;
+    private View.OnClickListener mSnackbarActionClickListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initUI();
-        //initPermissions();
         initServerCommunication();
         initWearCommunicationService();
-    }
-
-    private void initPermissions() {
-        requestPermission(Manifest.permission.GET_ACCOUNTS, REQUEST_ACCOUNTS_CODE);
     }
 
     private void initWearCommunicationService() {
@@ -81,6 +73,12 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         mBotonFlotante.setOnClickListener(this.onBotonCliqueado());
         mOnNavigationItemSelectedListener = getOnNavigationItemSelectedListener();
         mNavigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        mSnackbarActionClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initServerCommunication();
+            }
+        };
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
@@ -119,21 +117,16 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
 
             @Override
             public void onClick(final View v) {
-                String msg = "default";
                 switch (mSelectedOption) {
                     case R.id.navigation_places:
-                        msg = "Crear nuevo lugar";
                         enviarAlMapa();
                         break;
                     case R.id.navigation_contacts:
-                        msg = "Agregar nuevo contacto";
                         break;
                     case R.id.navigation_messages:
-                        msg = "Crear nuevo mensaje";
                         newMessageForm("","");
                         break;
                 }
-                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
             }
         };
     }
@@ -153,12 +146,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                 && data.getBooleanExtra("HasConnectionError", false)) {
                     mNavigation.setSelectedItemId(R.id.navigation_places);
                     mSelectedOption = R.id.navigation_places;
-                    showSnackbarServerDisconnected(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            initServerCommunication();
-                        }
-                    });
+                    Utils.showSnackbarServerDisconnected(this, mSnackbarActionClickListener);
                 }
     }
 
@@ -175,20 +163,10 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
             mServer.emit("conectar", new String[]{mDeviceId});
             mServer.on(new String[]{"conectar", "no_registrado"}, this);
         } catch (ServerComunicationException e) {
-            showSnackbarServerDisconnected(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    initServerCommunication();
-                }
-            });
+            Utils.showSnackbarServerDisconnected(this, mSnackbarActionClickListener);
         }
 
     }
-
-    private void showSnackbarServerDisconnected(View.OnClickListener onClickListener) {
-        Utils.showSnackbar(this, "Error al conectar", "Reintentar", onClickListener);
-    }
-
 
     private void requestPermission(String permission,int requestCode){
         if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
@@ -210,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case REQUEST_ACCOUNTS_CODE: {
+            case ACCOUNTS_REQUEST_CODE: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     registrar_usuario();
@@ -234,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                 conectar(args);
                 return;
             case "no_registrado":
-                requestPermission(Manifest.permission.GET_ACCOUNTS, REQUEST_ACCOUNTS_CODE);
+                requestPermission(Manifest.permission.GET_ACCOUNTS, ACCOUNTS_REQUEST_CODE);
                 return;
         }
     }
@@ -268,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         } catch (IndexOutOfBoundsException e){
             mUsername = "pepe";
         }
-        showLoadingDialog("Registrando usuario");
+        showLoadingDialog(getString(R.string.registering_user_message));
         Log.d(TAG, "Registrando Usuario");
         JSONObject params = new JSONObject();
         try {
@@ -286,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         JSONObject data = (JSONObject) args[0];
         Log.d(TAG, "Conectando");
         try {
-            showLoadingDialog("Conectando");
+            showLoadingDialog(getString(R.string.connecting_user_message));
             Log.d(TAG, "Bienvenido " + data.getString("usuario"));
             mUsername = data.getString("usuario");
             mPlacesList = new PlacesList(MainActivity.this, "lugares", R.id.placesList,new String[] {"name", "description"});
@@ -318,12 +296,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                     break;
             }
         } catch (ServerComunicationException e) {
-            showSnackbarServerDisconnected(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    initServerCommunication();
-                }
-            });
+            Utils.showSnackbarServerDisconnected(this, mSnackbarActionClickListener);
         }
     }
 
