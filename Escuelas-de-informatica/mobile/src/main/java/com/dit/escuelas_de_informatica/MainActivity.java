@@ -37,8 +37,8 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements SocketListener, HttpResponseListener {
     private static final int REQUEST_ACCOUNTS_CODE = 33465;
+    private String API_URL = "http://192.168.0.107:5000";
     private static final int MESSAGES_REQUEST_CODE = 1;
-    private String API_URL = "http://192.168.0.101:5000";
     private String TAG = "MainActivity";
     private String mDeviceId;
     private FloatingActionButton mBotonFlotante;
@@ -141,18 +141,18 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == MESSAGES_REQUEST_CODE) {
-            if (resultCode == RESULT_CANCELED) {
-                mNavigation.setSelectedItemId(R.id.navigation_places);
-                mSelectedOption = R.id.navigation_places;
-                showSnackbarServerDisconnected(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        initServerCommunication();
-                    }
-                });
-            }
-        }
+        if (requestCode == MESSAGES_REQUEST_CODE
+                && resultCode == RESULT_CANCELED
+                && data.getBooleanExtra("HasConnectionError", false)) {
+                    mNavigation.setSelectedItemId(R.id.navigation_places);
+                    mSelectedOption = R.id.navigation_places;
+                    showSnackbarServerDisconnected(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            initServerCommunication();
+                        }
+                    });
+                }
     }
 
 

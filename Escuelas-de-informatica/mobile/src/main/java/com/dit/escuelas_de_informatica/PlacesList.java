@@ -36,6 +36,9 @@ public class PlacesList extends ElementsList {
      @Override
     public void call(String eventName, Object[] args) {
         if (("get" + this.mEventName).equals(eventName)){ //TODO: capaz que habria que cambiar esto. No me deja usar un SWITCH CASE
+
+            this.mPlaces = new ArrayList<Place>();
+            this.mList.clear();
             this.fillList(args);
         }else{
             try {
@@ -48,16 +51,16 @@ public class PlacesList extends ElementsList {
 
     public void fillList(final Object[] args){
 
-                try {
-                    JSONArray data = new JSONArray((String)args[0]);
-                    for(int i=0; i<data.length(); i++){
-                        JSONObject l = data.getJSONObject(i);
-                        refreshItem(l);
+        try {
+            JSONArray data = new JSONArray((String)args[0]);
+            for(int i=0; i<data.length(); i++){
+                JSONObject l = data.getJSONObject(i);
+                refreshItem(l);
 
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
     }
 
