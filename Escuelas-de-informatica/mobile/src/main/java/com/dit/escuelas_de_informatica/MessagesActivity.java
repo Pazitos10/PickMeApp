@@ -1,5 +1,6 @@
 package com.dit.escuelas_de_informatica;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -45,7 +46,13 @@ public class MessagesActivity  extends AppCompatActivity {
             try {
                 newMessage.send();
             } catch (ServerComunicationException e) {
-                showSnackbarServerDisconnected();
+                showSnackbarServerDisconnected(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        setResult(RESULT_CANCELED);
+                        finish();
+                    }
+                });
             }
         }else{
             Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
@@ -54,22 +61,8 @@ public class MessagesActivity  extends AppCompatActivity {
 
     }
 
-    private void showSnackbar(String snackbarMsg, String snackbarAction, View.OnClickListener clickListener) {
-        Snackbar.make(findViewById(android.R.id.content), snackbarMsg , Snackbar.LENGTH_INDEFINITE)
-                .setAction(snackbarAction, clickListener)
-                .setActionTextColor(Color.LTGRAY)
-                .show();
-    }
-
-    private void showSnackbarServerDisconnected() {
-        showSnackbar("Error al conectar", "Reintentar", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setResult(RESULT_CANCELED);
-                finish();
-                //initServerCommunication();
-            }
-        });
+    private void showSnackbarServerDisconnected(View.OnClickListener onClickListener) {
+        Utils.showSnackbar(this, "Error al conectar", "Reintentar", onClickListener);
     }
 
 

@@ -145,7 +145,12 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
             if (resultCode == RESULT_CANCELED) {
                 mNavigation.setSelectedItemId(R.id.navigation_places);
                 mSelectedOption = R.id.navigation_places;
-                showSnackbarServerDisconnected();
+                showSnackbarServerDisconnected(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        initServerCommunication();
+                    }
+                });
             }
         }
     }
@@ -163,18 +168,18 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
             mServer.emit("conectar", new String[]{mDeviceId});
             mServer.on(new String[]{"conectar", "no_registrado"}, this);
         } catch (ServerComunicationException e) {
-            showSnackbarServerDisconnected();
+            showSnackbarServerDisconnected(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    initServerCommunication();
+                }
+            });
         }
 
     }
 
-    private void showSnackbarServerDisconnected() {
-        showSnackbar("Error al conectar", "Reintentar", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                initServerCommunication();
-            }
-        });
+    private void showSnackbarServerDisconnected(View.OnClickListener onClickListener) {
+        Utils.showSnackbar(this, "Error al conectar", "Reintentar", onClickListener);
     }
 
 
@@ -287,13 +292,6 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         }
     }
 
-    private void showSnackbar(String snackbarMsg, String snackbarAction, View.OnClickListener clickListener) {
-        Snackbar.make(findViewById(android.R.id.content), snackbarMsg , Snackbar.LENGTH_INDEFINITE)
-                .setAction(snackbarAction, clickListener)
-                .setActionTextColor(Color.LTGRAY)
-                .show();
-    }
-
     @Override
     public void onHttpResponse(String responseCode) {
         try {
@@ -313,7 +311,12 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                     break;
             }
         } catch (ServerComunicationException e) {
-            showSnackbarServerDisconnected();
+            showSnackbarServerDisconnected(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    initServerCommunication();
+                }
+            });
         }
     }
 

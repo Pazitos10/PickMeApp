@@ -4,10 +4,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.dit.escuelas_de_informatica.NewPlaceDataActivity;
@@ -109,5 +113,16 @@ public class Utils {
                 activeNetwork.isConnectedOrConnecting();
         return isConnected;
     }
+
+    public static void showSnackbar(AppCompatActivity activity,
+                                    String snackbarMsg,
+                                    String snackbarAction,
+                                    View.OnClickListener clickListener) {
+        Snackbar.make(activity.findViewById(android.R.id.content), snackbarMsg , Snackbar.LENGTH_INDEFINITE)
+                .setAction(snackbarAction, clickListener)
+                .setActionTextColor(Color.LTGRAY)
+                .show();
+    }
+
 
 }
