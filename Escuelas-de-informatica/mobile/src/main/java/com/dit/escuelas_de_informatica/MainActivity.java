@@ -130,13 +130,20 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                         break;
                     case R.id.navigation_messages:
                         msg = "Crear nuevo mensaje";
-                        Intent intent = new Intent(MainActivity.this, MessagesActivity.class);
-                        startActivityForResult(intent, MESSAGES_REQUEST_CODE);
+                        newMessageForm("","");
                         break;
                 }
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
             }
         };
+    }
+
+
+    public void newMessageForm(String username, String idPlace){
+        Intent intent = new Intent(this, MessagesActivity.class);
+        intent.putExtra("username",username);
+        intent.putExtra("id",idPlace);
+        startActivityForResult(intent, MESSAGES_REQUEST_CODE);
     }
 
     @Override

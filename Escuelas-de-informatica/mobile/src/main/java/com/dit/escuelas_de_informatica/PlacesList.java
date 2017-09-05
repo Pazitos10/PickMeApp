@@ -1,5 +1,6 @@
 package com.dit.escuelas_de_informatica;
 
+import android.util.Log;
 import android.view.View;
 
 import com.dit.escuelas_de_informatica.modelo.Place;
@@ -35,8 +36,7 @@ public class PlacesList extends ElementsList {
 
      @Override
     public void call(String eventName, Object[] args) {
-        if (("get" + this.mEventName).equals(eventName)){ //TODO: capaz que habria que cambiar esto. No me deja usar un SWITCH CASE
-
+        if (("get" + this.mEventName).equals(eventName)){
             this.mPlaces = new ArrayList<Place>();
             this.mList.clear();
             this.fillList(args);
@@ -67,11 +67,12 @@ public class PlacesList extends ElementsList {
 
             double lat = new Double(l.get("latlng").toString().split("/")[0]);
             double lnt = new Double(l.get("latlng").toString().split("/")[1]);
-            place = new Place(l.get("nombre").toString(),l.get("descripcion").toString(), new LatLng(lat,lnt));
+            place = new Place(l.get("nombre").toString(),l.get("descripcion").toString(), new LatLng(lat,lnt),l.get("id_lugar").toString());
             mPlaces.add(place);
             Map<String, String> itemPlace = new HashMap<String, String>();
             itemPlace.put("name",place.getName());
             itemPlace.put("description", place.getDescription());
+            itemPlace.put("id", place.getId());
             mList.add(itemPlace);
             mContext.runOnUiThread(new Runnable() {
                 @Override
@@ -88,7 +89,9 @@ public class PlacesList extends ElementsList {
 
     @Override
     public void onClick(int i) {
-
+        Map<String, String> lst = mList.get(i);
+        String idPlace = lst.get("id");
+        ((MainActivity) mContext).newMessageForm("",idPlace);
     }
 
 

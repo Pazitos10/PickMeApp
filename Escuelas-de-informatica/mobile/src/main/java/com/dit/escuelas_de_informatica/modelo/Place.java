@@ -26,20 +26,26 @@ public class Place {
         return mLatLng;
     }
 
+    public String getId() {
+        return mIdLugar;
+    }
+
     public void setLatLng(LatLng mLatLng) {
         this.mLatLng = mLatLng;
     }
 
     private LatLng mLatLng;
+    private String mIdLugar;
 
     public Place() {
 
     }
 
-    public Place(String name, String description, LatLng latLng) {
+    public Place(String name, String description, LatLng latLng, String id) {
         this.mName = name;
         this.mDescription = description;
         this.mLatLng = latLng;
+        this.mIdLugar = id;
     }
 
 

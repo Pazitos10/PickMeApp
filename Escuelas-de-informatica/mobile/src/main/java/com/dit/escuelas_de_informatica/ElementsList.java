@@ -1,10 +1,13 @@
 package com.dit.escuelas_de_informatica;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 
 import com.dit.escuelas_de_informatica.utiles.ServerComunication;
 import com.dit.escuelas_de_informatica.utiles.ServerComunicationException;
@@ -34,7 +37,6 @@ public abstract class ElementsList implements SocketListener{
         this.mEventName = eventName;
         this.mElementsField = elementsField;
         this.mContext = context;
-        //TODO: aca necesito el server de una manera comoda.
         ServerComunication serverComunication = ServerComunication.getInstance();
         //serverComunication.on(("get" + this.mEventName),this);
         String[] events = new String[]{("get" + this.mEventName),("act-" + this.mEventName)};
@@ -51,6 +53,7 @@ public abstract class ElementsList implements SocketListener{
                 new int[] {android.R.id.text1,
                         android.R.id.text2,
                 });
+
 
         mContext.runOnUiThread(new Runnable() {
             @Override

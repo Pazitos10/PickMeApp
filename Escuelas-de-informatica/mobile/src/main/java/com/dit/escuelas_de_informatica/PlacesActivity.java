@@ -110,8 +110,6 @@ public class PlacesActivity extends AppCompatActivity
          * */
         mLugares = new ArrayList<Place>();
         // Añade el elemento al ArrayList
-        mLugares.add(new Place("India", "Arriba de Nueva Delhi", new LatLng(29.56, 77.49)));
-        mLugares.add(new Place("Francia", "Arriba de Paris", new LatLng(49.06, 2.12)));
         return mLugares;
     }
 

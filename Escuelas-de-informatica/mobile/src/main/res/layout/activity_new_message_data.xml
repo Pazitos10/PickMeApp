@@ -23,13 +23,6 @@
             android:layout_height="wrap_content"
             android:text="@string/destination_activity_messages" />
 
-       <!-- <EditText
-            android:id="@+id/editTextDestination"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:inputType="text" />-->
-
         <AutoCompleteTextView
             android:id="@+id/editTextDestination"
             android:layout_width="match_parent"

@@ -45,6 +45,7 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
     private ArrayList<String>mList;
     private ArrayAdapter<String> mAdapter;
     private Toolbar mToolbar;
+    private String mIdLugar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +88,10 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
         } catch (ServerComunicationException e) {
             e.printStackTrace();
         }
+
+        Intent intent = getIntent();
+        mEditDestination.setText(intent.getStringExtra("username"));
+        mIdLugar = intent.getStringExtra("id");
     }
 
     public void sendMessage(View view)
@@ -95,8 +100,8 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
         //mEditDestination.getText()
         String message = mEditMessage.getText().toString().trim();
         String destination = mEditDestination.getText().toString().trim();
-        if(!message.equals("") && !destination.equals("") ){
-            Message newMessage = new Message(destination,message);
+        if(!message.equals("") && !destination.equals("") && mList.contains(destination.toString()) ){
+            Message newMessage = new Message(destination,message,mIdLugar);
             try {
                 newMessage.send();
                 Toast.makeText(this, "Mensaje Enviado", Toast.LENGTH_SHORT).show();
@@ -112,10 +117,15 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
                 });
             }
         }else{
-            if (message.equals(""))
-                mEditMessage.setError("Error - Completar campo mensaje");
-            else
-                mEditDestination.setError("Error - Completar campo destinatario");
+            if (message.equals("")){
+                mEditMessage.setError("Error - Campo vacio");
+            }
+            else if (destination.equals("") || !mList.contains(destination.toString())){
+                mEditDestination.setError("Error - Campo vacio, o usuario no existe");
+            }else{
+                mEditMessage.setError("Error - Campo vacio");
+                mEditDestination.setError("Error - Campo vacio, o usuario no existe");
+            }
            // TODO : usar @String!
         }
 
@@ -129,7 +139,7 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
 
     @Override
     public void call(String eventName, Object[] args) {
-        if (("getusuarios").equals(eventName)){ //TODO: capaz que habria que cambiar esto. No me deja usar un SWITCH CASE
+        if (("getusuarios").equals(eventName)){
             this.fillList(args);
         }else{
             this.refreshItem((JSONObject) args[0]);

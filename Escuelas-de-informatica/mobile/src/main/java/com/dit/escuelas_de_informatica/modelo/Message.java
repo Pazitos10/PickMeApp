@@ -18,6 +18,7 @@ public class Message {
     String mDestination;
     String mMessageText;
     String mTime;
+    String mIdLugar;
 
     public String getSource() {
         return mSource;
@@ -35,11 +36,14 @@ public class Message {
         return mTime;
     }
 
-    public Message(String source,String destination,String messageText,String time) {
+    public String getIdLugar(){return mIdLugar;}
+
+    public Message(String source,String destination,String messageText,String time, String idLugar) {
         mSource = source;
         mDestination = destination;
         mMessageText = messageText;
         mTime = time;
+        mIdLugar = idLugar;
 
     }
     public Message(String destination,String messageText) {
@@ -47,9 +51,15 @@ public class Message {
         mMessageText = messageText;
     }
 
+    public Message(String destination,String messageText, String idLugar) {
+        mDestination = destination;
+        mMessageText = messageText;
+        mIdLugar = idLugar;
+    }
+
     public void send() throws ServerComunicationException{
         ServerComunication socket = ServerComunication.getInstance();
-        socket.emit("act-mensajes",new String[]{this.mDestination,this.mMessageText});
+        socket.emit("act-mensajes",new String[]{this.mDestination,this.mMessageText,this.mIdLugar});
     }
 
 
