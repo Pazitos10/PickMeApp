@@ -168,4 +168,16 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
         }
 
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        this.finish();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
 }

@@ -60,8 +60,19 @@ public class PlacesActivity extends AppCompatActivity
 
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
+    }
 
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        this.finish();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
 

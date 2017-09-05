@@ -47,10 +47,8 @@ public class NewPlaceDataActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         initUI();
         inicializar();
-
     }
 
     private void initUI() {
@@ -117,7 +115,7 @@ public class NewPlaceDataActivity extends AppCompatActivity
                         nombre,
                         Utils.getLatLngString(nuevoPunto),
                         descripcion,
-                        "pablo1n7"
+                        "pazosbruno" //TODO: obtener el usuario como corresponde
                 };
 
                 mServer.emit("guardarlugar", params);
