@@ -49,10 +49,11 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_new_message_data);
 
         mToolbar = (Toolbar) findViewById(R.id.app_bar);
-        setSupportActionBar(mToolbar);
-        ActionBar ab = getSupportActionBar();
+        this.setSupportActionBar(mToolbar);
+        ActionBar ab = this.getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true); //Para volver hacia atrás si es posible
         ab.setTitle(R.string.title_activity_messages);
 
@@ -66,7 +67,6 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
         });
 
 
-        setContentView(R.layout.activity_new_message_data);
         //mEditDestination = (EditText) findViewById(R.id.editTextDestination);
         mEditMessage = (EditText) findViewById(R.id.editTextMessage);
 
@@ -100,6 +100,7 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
             try {
                 newMessage.send();
                 Toast.makeText(this, "Mensaje Enviado", Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK);
                 this.finish();
             } catch (ServerComunicationException e) {
                 showSnackbarServerDisconnected(new View.OnClickListener() {
@@ -131,11 +132,8 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
         if (("getusuarios").equals(eventName)){ //TODO: capaz que habria que cambiar esto. No me deja usar un SWITCH CASE
             this.fillList(args);
         }else{
-            try {
-                this.refreshItem(new JSONObject((String)args[0]));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            this.refreshItem((JSONObject) args[0]);
+
         }
     }
 

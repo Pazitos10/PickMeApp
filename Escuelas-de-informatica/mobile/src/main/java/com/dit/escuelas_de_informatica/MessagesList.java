@@ -47,7 +47,7 @@ public class MessagesList extends ElementsList {
 
                 try {
                     JSONArray data = new JSONArray((String)args[0]);
-                    for(int i=0; i<data.length(); i++){
+                    for(int i=data.length() -1 ; i>=0 ;i--){
                         JSONObject l = data.getJSONObject(i);
                         refreshItem(l);
 
