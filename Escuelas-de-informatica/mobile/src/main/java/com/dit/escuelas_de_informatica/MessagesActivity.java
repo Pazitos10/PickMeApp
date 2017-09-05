@@ -1,15 +1,10 @@
 package com.dit.escuelas_de_informatica;
 
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -18,13 +13,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.dit.escuelas_de_informatica.modelo.Message;
-
 import com.dit.escuelas_de_informatica.modelo.User;
 import com.dit.escuelas_de_informatica.utiles.ServerComunication;
-import com.dit.escuelas_de_informatica.utiles.SocketListener;
 import com.dit.escuelas_de_informatica.utiles.ServerComunicationException;
+import com.dit.escuelas_de_informatica.utiles.SocketListener;
 import com.dit.escuelas_de_informatica.utiles.Utils;
-
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,9 +25,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-/**
- * Created by developer on 9/4/17.
- */
 
 public class MessagesActivity  extends AppCompatActivity implements SocketListener {
 
@@ -53,8 +43,8 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
         setContentView(R.layout.activity_new_message_data);
 
         mToolbar = (Toolbar) findViewById(R.id.app_bar);
-        setSupportActionBar(mToolbar);
-        ActionBar ab = getSupportActionBar();
+        this.setSupportActionBar(mToolbar);
+        ActionBar ab = this.getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true); //Para volver hacia atrás si es posible
         ab.setTitle(R.string.title_activity_messages);
 
@@ -68,7 +58,6 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
         });
 
         mEditMessage = (EditText) findViewById(R.id.editTextMessage);
-
         mUsers = new ArrayList<User>();
         mList = new ArrayList<String>();
 
@@ -106,6 +95,7 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
             try {
                 newMessage.send();
                 Toast.makeText(this, getString(R.string.message_sent), Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK);
                 this.finish();
             } catch (ServerComunicationException e) {
                 Utils.showSnackbarServerDisconnected(this, mSnackbarActionClickListener);
@@ -125,11 +115,8 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
         if (("getusuarios").equals(eventName)){ //TODO: capaz que habria que cambiar esto. No me deja usar un SWITCH CASE
             this.fillList(args);
         }else{
-            try {
-                this.refreshItem(new JSONObject((String)args[0]));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            this.refreshItem((JSONObject) args[0]);
+
         }
     }
 

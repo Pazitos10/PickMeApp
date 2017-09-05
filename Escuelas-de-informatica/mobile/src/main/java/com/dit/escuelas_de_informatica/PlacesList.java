@@ -41,11 +41,7 @@ public class PlacesList extends ElementsList {
             this.mList.clear();
             this.fillList(args);
         }else{
-            try {
-                this.refreshItem(new JSONObject((String)args[0]));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            this.refreshItem((JSONObject) args[0]);
         }
     }
 
