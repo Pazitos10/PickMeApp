@@ -9,6 +9,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
+
 import java.util.List;
 
 public class MainActivity extends Activity {
@@ -18,6 +24,7 @@ public class MainActivity extends Activity {
     private static final int SPEECH_REQUEST_CODE = 0;
     private String new_place_name;
     private String new_place_description;
+    private GoogleApiClient mGoogleApiClient;
 
 
     @Override
@@ -33,6 +40,10 @@ public class MainActivity extends Activity {
         });
         new_place_name = "";
         new_place_description = "";
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Wearable.API)
+                .build();
+        mGoogleApiClient.connect();
     }
 
     /**
@@ -84,6 +95,23 @@ public class MainActivity extends Activity {
             start_voice_recognizer("Ingrese la descripcion del nuevo lugar");
         }else {
             Log.d(TAG, "save_current_place_location: GUARDAR EL LUGAR: "+new_place_name + ": "+ new_place_description);
+            String placedata = new_place_name + ";" + new_place_description;
+            sendMessage(mGoogleApiClient, "path/no/importa", placedata);
+            new_place_description = "";
         }
+    }
+
+    public static void sendMessage(final GoogleApiClient mApiClient, final String path, final String data) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(mApiClient).await();
+                for (Node node : nodes.getNodes()) {
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+                            mApiClient, node.getId(), path, data.getBytes()).await();
+
+                }
+            }
+        }).start();
     }
 }

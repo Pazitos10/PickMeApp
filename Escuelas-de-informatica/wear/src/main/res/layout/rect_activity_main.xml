@@ -13,6 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginTop="5dp"
         android:text="@string/hello_pickme_app"
         android:textColor="@color/white" />
 
@@ -25,7 +26,7 @@
         android:background="@drawable/roundcorners"
         android:elevation="1dp"
         android:onClick="save_current_place_location"
-        android:src="@mipmap/ic_launcher"
+        android:src="@mipmap/ic_current_location"
         android:visibility="visible" />
 
 </LinearLayout>

@@ -28,6 +28,7 @@ import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
@@ -191,8 +192,9 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         LOGD(TAG, "onMessageReceived() A message from watch was received:"
-                + messageEvent.getRequestId() + " " + messageEvent.getPath());
-
+                + messageEvent.getRequestId() + " " + messageEvent.getPath() + " " + messageEvent.getData().toString());
+        String message = new String(messageEvent.getData(), StandardCharsets.UTF_8);
+        Toast.makeText(MainActivity.this, "From wear: " + message, Toast.LENGTH_SHORT).show();
     }
 
     /**
