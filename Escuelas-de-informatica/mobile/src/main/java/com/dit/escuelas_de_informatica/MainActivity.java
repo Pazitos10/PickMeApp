@@ -1,9 +1,12 @@
 package com.dit.escuelas_de_informatica;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -11,17 +14,20 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+
 import android.widget.Toast;
 
 import com.dit.escuelas_de_informatica.utiles.HttpResponseListener;
 import com.dit.escuelas_de_informatica.utiles.ServerComunication;
+import com.dit.escuelas_de_informatica.utiles.ServerComunicationException;
 import com.dit.escuelas_de_informatica.utiles.SocketListener;
 import com.dit.escuelas_de_informatica.utiles.Utils;
 
@@ -30,13 +36,16 @@ import org.json.JSONObject;
 
 
 public class MainActivity extends AppCompatActivity implements SocketListener, HttpResponseListener {
-    private String API_URL = "http://192.168.0.19:5000";
+    private static final int REQUEST_ACCOUNTS_CODE = 33465;
+    private String API_URL = "http://192.168.0.101:5000";
     private String TAG = "MainActivity";
     private String mDeviceId;
     private FloatingActionButton mBotonFlotante;
     private int mSelectedOption;
     private Toolbar mToolbar;
     private ServerComunication mServer;
+    private PlacesList mPlacesList;
+    private MessagesList mMessagesList;
     private Intent wearCommunicationIntent;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener;
     private String mUsername;
@@ -46,8 +55,13 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initUI();
+        //initPermissions();
         initServerCommunication();
         initWearCommunicationService();
+    }
+
+    private void initPermissions() {
+        requestPermission(Manifest.permission.GET_ACCOUNTS, REQUEST_ACCOUNTS_CODE);
     }
 
     private void initWearCommunicationService() {
@@ -61,10 +75,10 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         setSupportActionBar(mToolbar);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         mBotonFlotante = (FloatingActionButton) findViewById(R.id.floatingActionButton);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         mSelectedOption = R.id.navigation_places;
         mBotonFlotante.setOnClickListener(this.onBotonCliqueado());
         mOnNavigationItemSelectedListener = getOnNavigationItemSelectedListener();
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
@@ -74,43 +88,24 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-                ListView lista;
-                lista = (ListView) findViewById(R.id.lista);
-                ArrayAdapter<String> adaptador;
-                switch (item.getItemId()) {
-                    case R.id.navigation_places:
+            switch (item.getItemId()) {
+                case R.id.navigation_places:
+                    mPlacesList.mAdapter.notifyDataSetChanged();
+                    mMessagesList.mListView.setVisibility(View.GONE);
+                    mPlacesList.mListView.setVisibility(View.VISIBLE);
+                    return true;
 
-                   /* Map<String, String> map = new HashMap<String, String>();
-                    map.put("encabezado", "1");
-                    map.put("cuerpo", "a");
+                case R.id.navigation_contacts:
+                    return true;
 
-                    listaLugares.add(map);*/
-
-                        ListElements listElements = new ListElements(MainActivity.this, "lugares", R.id.lista, new String[]{"encabezado", "cuerpo"});
-                        listElements.fillList();
-                    /*
-
-                    ArrayList<Map<String, String>> listaLugares = new ArrayList<>();
-                    SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, new ArrayList<Map<String, String>>(),
-                            android.R.layout.simple_list_item_2,
-                            new String[] {"encabezado", "cuerpo"},
-                            new int[] {android.R.id.text1,
-                                    android.R.id.text2,
-                            });
-                    lista.setAdapter(adapter);*/
-                        return true;
-
-                    case R.id.navigation_contacts:
-
-                        return true;
-
-                    case R.id.navigation_messages:
-                        String mListaMensajes2 = "[{'encabezado':'msj 1', 'cuerpo':'Hola', 'idImagen':'0'}, {'encabezado':'Msj 2', 'cuerpo':'Chau', 'idImagen':'0'}]";
-                        mSelectedOption = R.id.navigation_messages;
-                        return true;
-                }
-                return false;
+                case R.id.navigation_messages:
+                    mMessagesList.mAdapter.notifyDataSetChanged();
+                    mPlacesList.mListView.setVisibility(View.GONE);
+                    mMessagesList.mListView.setVisibility(View.VISIBLE);
+                    return true;
             }
+            return false;
+        }
 
         };
     }
@@ -144,18 +139,57 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     }
 
     private void initServerCommunication() {
-        mUsername = getUsername();
         mDeviceId = getDeviceId();
-        mServer = ServerComunication.getInstance(API_URL);
-        mServer.emit("conectar", new String[]{mDeviceId});
-        mServer.on(new String[]{"conectar", "no_registrado"}, this);
+        try {
+            mServer = ServerComunication.getInstance(API_URL);
+            mServer.emit("conectar", new String[]{mDeviceId});
+            mServer.on(new String[]{"conectar", "no_registrado"}, this);
+        } catch (ServerComunicationException e) {
+            showSnackbarServerDisconnected();
+        }
+
     }
 
-    private String getUsername() {
-        AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
-        Account list = manager.getAccountsByType("com.google")[0]; //primera cuenta gmail encontrada
-        return list.name.split("@")[0]; //nos quedamos con la primer parte (antes del @)
+    private void showSnackbarServerDisconnected() {
+        showSnackbar("Error al conectar", "Reintentar", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initServerCommunication();
+            }
+        });
     }
+
+
+    private void requestPermission(String permission,int requestCode){
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    permission)) {
+
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
+            }
+
+
+        } else {
+            registrar_usuario();
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_ACCOUNTS_CODE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    registrar_usuario();
+                }
+                return;
+            }
+        }
+    }
+
 
     private String getDeviceId() {
         return Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -170,9 +204,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                 conectar(args);
                 return;
             case "no_registrado":
-                registrar_usuario(args);
-                showLoadingDialog("Registrando usuario");
-                Log.d(TAG, "call: mostrando loading dialog");
+                requestPermission(Manifest.permission.GET_ACCOUNTS, REQUEST_ACCOUNTS_CODE);
                 return;
         }
     }
@@ -181,21 +213,28 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mLoadingDialog = new ProgressDialog(MainActivity.this);
+                if (mLoadingDialog == null){
+                    mLoadingDialog = new ProgressDialog(MainActivity.this);
+                    mLoadingDialog.setIndeterminate(true);
+                }
                 mLoadingDialog.setMessage(msg);
-                mLoadingDialog.setIndeterminate(true);
                 mLoadingDialog.show();
+
             }
         });
     }
 
     public void dismissLoadingDialog() {
-        if (mLoadingDialog != null) {
+        if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
             mLoadingDialog.dismiss();
         }
     }
 
-    private void registrar_usuario(Object[] args) {
+    private void registrar_usuario() {
+        AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+        Account list = manager.getAccountsByType("com.google")[0]; //primera cuenta gmail encontrada
+        mUsername =  list.name.split("@")[0]; //nos quedamos con la primer parte (antes del @)
+        showLoadingDialog("Registrando usuario");
         Log.d(TAG, "Registrando Usuario");
         JSONObject params = new JSONObject();
         try {
@@ -213,7 +252,12 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         JSONObject data = (JSONObject) args[0];
         Log.d(TAG, "Conectando");
         try {
+            showLoadingDialog("Conectando");
             Log.d(TAG, "Bienvenido " + data.getString("usuario"));
+            mUsername = data.getString("usuario");
+            mPlacesList = new PlacesList(MainActivity.this, "lugares", R.id.placesList,new String[] {"name", "description"});
+            mMessagesList = new MessagesList(MainActivity.this,"mensajes",R.id.messageList,new String[] {"timeUser", "message"});
+            dismissLoadingDialog();
             return;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -221,22 +265,33 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         }
     }
 
+    private void showSnackbar(String snackbarMsg, String snackbarAction, View.OnClickListener clickListener) {
+        Snackbar.make(findViewById(android.R.id.content), snackbarMsg , Snackbar.LENGTH_INDEFINITE)
+                .setAction(snackbarAction, clickListener)
+                .setActionTextColor(Color.LTGRAY)
+                .show();
+    }
+
     @Override
     public void onHttpResponse(String responseCode) {
-        switch (responseCode) {
-            case "200":
-                Log.d(TAG, "onHttpResponse: Success!");
-                mServer.emit("conectar", new String[]{mDeviceId});
-                break;
-            case "404":
-                Log.d(TAG, "onHttpResponse: Not Found!");
-                break;
-            case "500":
-                Log.d(TAG, "onHttpResponse: Server Error!");
-                break;
-            default:
-                Log.d(TAG, "onHttpResponse: [Code]: " + responseCode);
-                break;
+        try {
+            switch (responseCode) {
+                case "200":
+                    Log.d(TAG, "onHttpResponse: Success!");
+                    mServer.emit("conectar", new String[]{mDeviceId});
+                    break;
+                case "404":
+                    Log.d(TAG, "onHttpResponse: Not Found!");
+                    break;
+                case "500":
+                    Log.d(TAG, "onHttpResponse: Server Error!");
+                    break;
+                default:
+                    Log.d(TAG, "onHttpResponse: [Code]: " + responseCode);
+                    break;
+            }
+        } catch (ServerComunicationException e) {
+            showSnackbarServerDisconnected();
         }
     }
 

@@ -1,40 +1,14 @@
 package com.dit.escuelas_de_informatica.utiles;
 
 
-import android.content.Context;
-import android.provider.Settings;
-import android.util.Log;
-import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.NetworkInterface;
-import java.net.ProtocolException;
-import java.net.SocketException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-
-//import javax.net.ssl.HttpsURLConnection;
 
 import io.socket.client.IO;
 import io.socket.emitter.Emitter;
-import io.socket.engineio.client.Socket;
 
-/**
- * Created by root on 20/07/17.
- */
+import static java.lang.Thread.sleep;
 
 public class ServerComunication {
 
@@ -65,8 +39,25 @@ public class ServerComunication {
         return instance;
     }
 
-    public void emit(String eventName, String[] args){
-        mSocket.emit(eventName, args);
+    public static ServerComunication getInstance() {
+        return instance;
+    }
+
+    public void emit(String eventName, String[] args) throws ServerComunicationException {
+        try{
+            sleep(1000);
+            if (!mSocket.connected()) throw new ServerComunicationException();
+            if (args != null)
+                mSocket.emit(eventName, args);
+            else
+                mSocket.emit(eventName);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void emit(String eventName) throws ServerComunicationException {
+        emit(eventName, null);
     }
 
     public void on(final String eventName, final SocketListener listener){

@@ -17,6 +17,7 @@ import android.widget.EditText;
 
 import com.dit.escuelas_de_informatica.utiles.GeofenceTransitionsIntentService;
 import com.dit.escuelas_de_informatica.utiles.ServerComunication;
+import com.dit.escuelas_de_informatica.utiles.ServerComunicationException;
 import com.dit.escuelas_de_informatica.utiles.SocketListener;
 import com.dit.escuelas_de_informatica.utiles.Utils;
 import com.google.android.gms.location.Geofence;
@@ -32,7 +33,7 @@ public class NewPlaceDataActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks {
 
     private String TAG = "NewPlaceDataActivity";
-    private String API_URL = "http://192.168.0.19:5000";
+    private String API_URL = "http://192.168.0.107:5000";
     private Toolbar mToolbar;
     private EditText mEditTextNombre, mEditTextDescripcion;
     private Button mButtonGuardar;
@@ -104,22 +105,27 @@ public class NewPlaceDataActivity extends AppCompatActivity
 
 
     private void guardarLugar() {
+        try {
 
-        if( mEditTextNombre.getText().toString().trim().equals("")){
-            mEditTextNombre.setError(getString(R.string.invalid_place_name));
-        } else {
-            String nombre = mEditTextNombre.getText().toString();
-            String descripcion = mEditTextDescripcion.getText().toString();
-            String[] params = new String[]{
-                    nombre,
-                    Utils.getLatLngString(nuevoPunto),
-                    descripcion,
-                    "pablo1n7"
-            };
-            mServer.emit("guardarlugar", params);
-            createGeofence();
-            setResult(RESULT_OK);
-            finish();
+            if( mEditTextNombre.getText().toString().trim().equals("")){
+                mEditTextNombre.setError(getString(R.string.invalid_place_name));
+            } else {
+                String nombre = mEditTextNombre.getText().toString();
+                String descripcion = mEditTextDescripcion.getText().toString();
+                String[] params = new String[]{
+                        nombre,
+                        Utils.getLatLngString(nuevoPunto),
+                        descripcion,
+                        "pablo1n7"
+                };
+
+                mServer.emit("guardarlugar", params);
+                createGeofence();
+                setResult(RESULT_OK);
+                finish();
+            }
+        } catch (ServerComunicationException e) {
+            e.printStackTrace();
         }
 
 

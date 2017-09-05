@@ -1,6 +1,4 @@
 package com.dit.escuelas_de_informatica;
-
-
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,7 +11,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.dit.escuelas_de_informatica.modelo.Lugar;
+import com.dit.escuelas_de_informatica.modelo.Place;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -32,9 +30,9 @@ public class PlacesActivity extends AppCompatActivity
     private static final int REQUEST_CODE = 1;
     private static final int PERMISSION_REQUEST_CODE = 2;
     private GoogleMap mMap;
-    private ArrayList<Lugar> mLugares;
+    private ArrayList<Place> mLugares;
     private LatLng mCurrentLatLng;
-    private Lugar mLugarElegido;
+    private Place mLugarElegido;
     private FusedLocationProviderClient mFusedLocationClient;
 
     @Override
@@ -46,7 +44,7 @@ public class PlacesActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        mLugarElegido = new Lugar();
+        mLugarElegido = new Place();
         mLugares = solicitar_lugares();
 
         //mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -106,14 +104,14 @@ public class PlacesActivity extends AppCompatActivity
     }
 
 
-    private ArrayList<Lugar> solicitar_lugares() {
+    private ArrayList<Place> solicitar_lugares() {
         /**
          * Recupera de un servidor los mLugares que ya fueron creados
          * */
-        mLugares = new ArrayList<Lugar>();
+        mLugares = new ArrayList<Place>();
         // Añade el elemento al ArrayList
-        mLugares.add(new Lugar("India", "Arriba de Nueva Delhi", new LatLng(29.56, 77.49)));
-        mLugares.add(new Lugar("Francia", "Arriba de Paris", new LatLng(49.06, 2.12)));
+        mLugares.add(new Place("India", "Arriba de Nueva Delhi", new LatLng(29.56, 77.49)));
+        mLugares.add(new Place("Francia", "Arriba de Paris", new LatLng(49.06, 2.12)));
         return mLugares;
     }
 
@@ -156,7 +154,7 @@ public class PlacesActivity extends AppCompatActivity
     }
 
     private void insertar_marcadores() {
-        for (Lugar lugar : mLugares) {
+        for (Place lugar : mLugares) {
             LatLng centro = lugar.getLatLng();
             mMap.addMarker(new MarkerOptions().position(centro).title(lugar.toString()));
         }
