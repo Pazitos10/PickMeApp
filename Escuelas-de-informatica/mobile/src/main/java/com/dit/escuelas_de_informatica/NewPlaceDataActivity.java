@@ -33,7 +33,6 @@ public class NewPlaceDataActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks {
 
     private String TAG = "NewPlaceDataActivity";
-    private String API_URL = "http://192.168.0.107:5000";
     private Toolbar mToolbar;
     private EditText mEditTextNombre, mEditTextDescripcion;
     private Button mButtonGuardar;
@@ -48,21 +47,15 @@ public class NewPlaceDataActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_place_data);
+
+        initUI();
         inicializar();
 
     }
 
-    private void inicializar() {
-
-        //Recuperamos datos del punto registrado
-        Intent invokerIntent = getIntent();
-        if (invokerIntent.hasExtra("nuevoPunto")) {
-            nuevoPunto = (LatLng) invokerIntent.getExtras().get("nuevoPunto");
-            Log.d(TAG, "onCreate: "+nuevoPunto.toString());
-        }
-
+    private void initUI() {
         //Configuramos aspectos de UI
+        setContentView(R.layout.activity_new_place_data);
         mToolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(mToolbar);
         ActionBar ab = getSupportActionBar();
@@ -81,19 +74,27 @@ public class NewPlaceDataActivity extends AppCompatActivity
         mEditTextNombre = (EditText) findViewById(R.id.editTextNombre);
         mEditTextDescripcion = (EditText) findViewById(R.id.editTextDescripcion);
         mButtonGuardar = (Button) findViewById(R.id.buttonGuardar);
+    }
 
-        //Creamos un GoogleApiClient
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addApi(LocationServices.API)
-                .build();
+    private void inicializar() {
 
-        mServer = ServerComunication.getInstance(API_URL);
+        //Recuperamos datos del punto registrado
+        Intent invokerIntent = getIntent();
+        if (invokerIntent.hasExtra("nuevoPunto")) {
+            nuevoPunto = (LatLng) invokerIntent.getExtras().get("nuevoPunto");
+            Log.d(TAG, "onCreate: "+nuevoPunto.toString());
+        }
+        mServer = ServerComunication.getInstance();
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        //Creamos un GoogleApiClient
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addApi(LocationServices.API)
+                .build();
         mGoogleApiClient.connect();
     }
 

@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.dit.escuelas_de_informatica.NewPlaceDataActivity;
+import com.dit.escuelas_de_informatica.R;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONException;
@@ -113,6 +114,16 @@ public class Utils {
                 activeNetwork.isConnectedOrConnecting();
         return isConnected;
     }
+
+
+    public static void showSnackbarServerDisconnected(AppCompatActivity activity,
+                                                      View.OnClickListener onClickListener) {
+        showSnackbar(activity,
+                activity.getString(R.string.no_connection_message),
+                activity.getString(R.string.no_connection_action),
+                onClickListener);
+    }
+
 
     public static void showSnackbar(AppCompatActivity activity,
                                     String snackbarMsg,

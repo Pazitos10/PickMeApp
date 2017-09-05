@@ -45,10 +45,12 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
     private ArrayList<String>mList;
     private ArrayAdapter<String> mAdapter;
     private Toolbar mToolbar;
+    private View.OnClickListener mSnackbarActionClickListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_new_message_data);
 
         mToolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(mToolbar);
@@ -65,9 +67,6 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
             }
         });
 
-
-        setContentView(R.layout.activity_new_message_data);
-        //mEditDestination = (EditText) findViewById(R.id.editTextDestination);
         mEditMessage = (EditText) findViewById(R.id.editTextMessage);
 
         mUsers = new ArrayList<User>();
@@ -78,6 +77,14 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
         mEditDestination= (AutoCompleteTextView)
                 findViewById(R.id.editTextDestination);
         mEditDestination.setAdapter(mAdapter);
+        mSnackbarActionClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setResult(RESULT_CANCELED, new Intent().putExtra("HasConnectionError", true));
+                finish();
+            }
+        };
+
 
         ServerComunication serverComunication = ServerComunication.getInstance();
         String[] events = new String[]{("getusuarios"),("act-usuarios")};
@@ -92,39 +99,26 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
     public void sendMessage(View view)
     {
         Log.d("SendMessage", "Registrando Usuario");
-        //mEditDestination.getText()
         String message = mEditMessage.getText().toString().trim();
         String destination = mEditDestination.getText().toString().trim();
         if(!message.equals("") && !destination.equals("") ){
             Message newMessage = new Message(destination,message);
             try {
                 newMessage.send();
-                Toast.makeText(this, "Mensaje Enviado", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.message_sent), Toast.LENGTH_SHORT).show();
                 this.finish();
             } catch (ServerComunicationException e) {
-                showSnackbarServerDisconnected(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        setResult(RESULT_CANCELED, new Intent().putExtra("HasConnectionError", true));
-                        finish();
-                    }
-                });
+                Utils.showSnackbarServerDisconnected(this, mSnackbarActionClickListener);
             }
         }else{
+            if (destination.equals(""))
+                mEditDestination.setError(getString(R.string.invalid_message_receiver));
             if (message.equals(""))
-                mEditMessage.setError("Error - Completar campo mensaje");
-            else
-                mEditDestination.setError("Error - Completar campo destinatario");
-           // TODO : usar @String!
+                mEditMessage.setError(getString(R.string.invalid_message_body));
         }
 
 
     }
-
-    private void showSnackbarServerDisconnected(View.OnClickListener onClickListener) {
-        Utils.showSnackbar(this, "Error al conectar", "Reintentar", onClickListener);
-    }
-
 
     @Override
     public void call(String eventName, Object[] args) {
@@ -156,11 +150,11 @@ public class MessagesActivity  extends AppCompatActivity implements SocketListen
     }
 
     public void refreshItem(JSONObject l) {
-        User user = null;
+        User user;
         try {
-            user = new User(l.get("id_usuario").toString(),l.get("nombre").toString());
+            user = new User(l.get("id_usuario").toString(), l.get("nombre").toString());
             mUsers.add(user);
-            String itemPlace = new String(l.get("nombre").toString());
+            String itemPlace = l.get("nombre").toString();
             mList.add(itemPlace);
             this.runOnUiThread(new Runnable() {
                 @Override
