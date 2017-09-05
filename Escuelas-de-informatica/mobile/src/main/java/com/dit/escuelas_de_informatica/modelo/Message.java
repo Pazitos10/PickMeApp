@@ -1,5 +1,13 @@
 package com.dit.escuelas_de_informatica.modelo;
 
+import android.graphics.Color;
+import android.support.design.widget.Snackbar;
+import android.view.View;
+
+import com.dit.escuelas_de_informatica.utiles.ServerComunication;
+import com.dit.escuelas_de_informatica.utiles.ServerComunicationException;
+import com.dit.escuelas_de_informatica.utiles.SocketListener;
+
 /**
  * Created by bruno on 22/06/17.
  */
@@ -34,7 +42,15 @@ public class Message {
         mTime = time;
 
     }
+    public Message(String destination,String messageText) {
+        mDestination = destination;
+        mMessageText = messageText;
+    }
 
+    public void send() throws ServerComunicationException{
+        ServerComunication socket = ServerComunication.getInstance();
+        socket.emit("act-mensajes",new String[]{this.mDestination,this.mMessageText});
+    }
 
 
 }

@@ -33,14 +33,10 @@ public class MessagesList extends ElementsList {
 
      @Override
     public void call(String eventName, Object[] args) {
-        if (("get" + this.mEventName).equals("getmensajes")){ //TODO: capaz que habria que cambiar esto. No me deja usar un SWITCH CASE
+        if (("get" + this.mEventName).equals(eventName)){ //TODO: capaz que habria que cambiar esto. No me deja usar un SWITCH CASE
             this.fillList(args);
         }else{
-            try {
-                this.refreshItem(new JSONObject((String)args[0]));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            this.refreshItem((JSONObject) args[0]);
         }
     }
 

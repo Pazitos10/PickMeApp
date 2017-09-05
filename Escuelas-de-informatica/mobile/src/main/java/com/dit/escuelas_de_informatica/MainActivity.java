@@ -37,6 +37,7 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements SocketListener, HttpResponseListener {
     private static final int REQUEST_ACCOUNTS_CODE = 33465;
+    private static final int MESSAGES_REQUEST_CODE = 1;
     private String API_URL = "http://192.168.0.101:5000";
     private String TAG = "MainActivity";
     private String mDeviceId;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener;
     private String mUsername;
     private ProgressDialog mLoadingDialog;
+    private BottomNavigationView mNavigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,12 +75,12 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
         setContentView(R.layout.activity_main);
         mToolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(mToolbar);
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        mNavigation = (BottomNavigationView) findViewById(R.id.navigation);
         mBotonFlotante = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         mSelectedOption = R.id.navigation_places;
         mBotonFlotante.setOnClickListener(this.onBotonCliqueado());
         mOnNavigationItemSelectedListener = getOnNavigationItemSelectedListener();
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        mNavigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
@@ -93,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                     mPlacesList.mAdapter.notifyDataSetChanged();
                     mMessagesList.mListView.setVisibility(View.GONE);
                     mPlacesList.mListView.setVisibility(View.VISIBLE);
+                    mSelectedOption = R.id.navigation_places;
                     return true;
 
                 case R.id.navigation_contacts:
@@ -102,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                     mMessagesList.mAdapter.notifyDataSetChanged();
                     mPlacesList.mListView.setVisibility(View.GONE);
                     mMessagesList.mListView.setVisibility(View.VISIBLE);
+                    mSelectedOption = R.id.navigation_messages;
                     return true;
             }
             return false;
@@ -126,12 +130,26 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
                         break;
                     case R.id.navigation_messages:
                         msg = "Crear nuevo mensaje";
+                        Intent intent = new Intent(MainActivity.this, MessagesActivity.class);
+                        startActivityForResult(intent, MESSAGES_REQUEST_CODE);
                         break;
                 }
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
             }
         };
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == MESSAGES_REQUEST_CODE) {
+            if (resultCode == RESULT_CANCELED) {
+                mNavigation.setSelectedItemId(R.id.navigation_places);
+                mSelectedOption = R.id.navigation_places;
+                showSnackbarServerDisconnected();
+            }
+        }
+    }
+
 
     private void enviarAlMapa() {
         Intent intent = new Intent(this, PlacesActivity.class);
@@ -168,11 +186,11 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
             }
-
-
         } else {
+
             registrar_usuario();
         }
+
 
     }
 
@@ -231,9 +249,13 @@ public class MainActivity extends AppCompatActivity implements SocketListener, H
     }
 
     private void registrar_usuario() {
-        AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
-        Account list = manager.getAccountsByType("com.google")[0]; //primera cuenta gmail encontrada
-        mUsername =  list.name.split("@")[0]; //nos quedamos con la primer parte (antes del @)
+        try{
+            AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+            Account list = manager.getAccountsByType("com.google")[0]; //primera cuenta gmail encontrada
+            mUsername =  list.name.split("@")[0]; //nos quedamos con la primer parte (antes del @)
+        } catch (IndexOutOfBoundsException e){
+            mUsername = "pepe";
+        }
         showLoadingDialog("Registrando usuario");
         Log.d(TAG, "Registrando Usuario");
         JSONObject params = new JSONObject();

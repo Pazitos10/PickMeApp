@@ -52,16 +52,18 @@ public abstract class ElementsList implements SocketListener{
                         android.R.id.text2,
                 });
 
-        context.runOnUiThread(new Runnable() {
+        mContext.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mListView.setAdapter(mAdapter);
-                mListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-                    @Override
-                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                        onClick(i);
-                    }
-                });
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                onClick(i);
             }
         });
 

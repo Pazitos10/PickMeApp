@@ -13,6 +13,11 @@
     <string name="description_field_label">Descripción</string>
     <string name="required_field">(*) Campo obligatorio</string>
 
+    <string name="title_activity_messages">Nuevo mensaje</string>
+    <string name="send_message_activity_messages">Enviar mensaje</string>
+    <string name="destination_activity_messages">Destinatario</string>
+    <string name="text_activity_messages">Mensaje</string>
+
 
     <!-- Messages -->
     <string name="invalid_place_name">Debe ingresar un nombre para el lugar</string>

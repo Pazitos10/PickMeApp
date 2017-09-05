@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <include layout="@layout/app_bar" android:id="@+id/app_bar"></include>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/app_bar"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:id="@+id/formMessage">
+
+        <TextView
+            android:id="@+id/textViewDestination"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/destination_activity_messages" />
+
+        <EditText
+            android:id="@+id/editTextDestination"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="text" />
+
+        <TextView
+            android:id="@+id/textViewMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/text_activity_messages" />
+
+        <EditText
+            android:id="@+id/editTextMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="20"
+            android:inputType="textMultiLine" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:gravity="center_horizontal"
+            android:text="@string/required_field" />
+
+        <Button
+            android:id="@+id/buttonGuardar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="sendMessage"
+            android:text="@string/send_message_activity_messages" />
+
+    </LinearLayout>
+
+
+</RelativeLayout>
